@@ -5,6 +5,8 @@ import fish.payara.healthcare.repository.PatientRepository;
 import fish.payara.security.annotations.Audited;
 import fish.payara.security.annotations.RequireRole;
 import jakarta.inject.Inject;
+import jakarta.security.enterprise.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -36,13 +39,19 @@ public class PatientResource {
     @Inject
     private PatientRepository patientRepository;
 
+    @Inject
+    private SecurityContext securityContext;
+
+    @Inject
+    private HttpServletRequest request;
+
     @GET
-    @Operation(summary = "List all patients", description = "Retrieve all patient records (Doctor/Nurse only)")
+    @Operation(summary = "List all patients", description = "Retrieve all patient records (ADMIN only)")
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Patients retrieved successfully"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole({"DOCTOR", "NURSE"})
+    @RequireRole("ADMIN")
     @Audited(action = "LIST_PATIENTS", level = Audited.SensitivityLevel.HIGH)
     public Response getAllPatients() {
         LOGGER.info("Fetching all patients");
@@ -69,14 +78,27 @@ public class PatientResource {
 
     @GET
     @Path("/department/{department}")
-    @Operation(summary = "Get patients by department", description = "Retrieve patients for a specific department")
+    @Operation(summary = "Get patients by department", description = "Retrieve patients for a specific department. Access is restricted to users in the same department, unless the user has the ADMIN role.")
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Patients retrieved"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole({"DOCTOR", "NURSE"})
+    @RequireRole({"DOCTOR", "NURSE", "ADMIN"})
     @Audited(action = "VIEW_DEPARTMENT_PATIENTS", level = Audited.SensitivityLevel.HIGH)
     public Response getPatientsByDepartment(@PathParam("department") @NotBlank String department) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> claims = (Map<String, Object>) request.getAttribute("claims");
+
+        if (!securityContext.isCallerInRole("ADMIN")) {
+            if (claims == null) {
+                throw new ForbiddenException("Authentication required");
+            }
+            Object userDepartment = claims.get("department");
+            if (userDepartment == null || !department.equals(userDepartment.toString())) {
+                throw new ForbiddenException("User not authorized for this department");
+            }
+        }
+
         LOGGER.info("Fetching patients for department: " + department);
         List<Patient> patients = patientRepository.findByDepartment(department);
         return Response.ok(patients).build();

@@ -116,6 +116,7 @@ public class JwtAuthenticationMechanism implements HttpAuthenticationMechanism {
 
             // Validate claims
             Map<String, Object> claims = signedJWT.getJWTClaimsSet().getClaims();
+            request.setAttribute("claims", claims);
 
             // Check expiration
             Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
@@ -139,14 +140,6 @@ public class JwtAuthenticationMechanism implements HttpAuthenticationMechanism {
 
             // Extract roles
             Set<String> roles = extractRoles(claims);
-
-            // Build additional attributes for ABAC
-            Map<String, Object> attributes = new HashMap<>();
-            attributes.put("email", signedJWT.getJWTClaimsSet().getStringClaim("email"));
-            attributes.put("department", signedJWT.getJWTClaimsSet().getStringClaim("department"));
-            attributes.put("ipAddress", request.getRemoteAddr());
-            attributes.put("userAgent", request.getHeader("User-Agent"));
-            attributes.put("authTime", new Date());
 
             return new CredentialValidationResult(username, roles);
 

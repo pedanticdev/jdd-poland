@@ -60,6 +60,10 @@ This application demonstrates Zero Trust security principles:
 - **Service-to-Service Security**: JWT-based authentication with least privilege
 - **Encrypted Transit**: Jakarta Security annotations
 
+### Input Validation
+
+A key principle of Zero Trust is "Never Trust, Always Verify". This applies to all data entering the system. This demo uses Jakarta Bean Validation to enforce strict data validation at the API boundary. For a detailed explanation of the input validation strategy, see [VALIDATION_ZERO_TRUST.md](VALIDATION_ZERO_TRUST.md).
+
 ## Docker Commands
 
 ```bash

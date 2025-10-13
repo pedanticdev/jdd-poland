@@ -10,13 +10,14 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import jakarta.security.enterprise.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.ForbiddenException;
 
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -36,6 +37,9 @@ public class AuthorizationInterceptor {
 
     @Inject
     private Event<SecurityEvent> securityEventPublisher;
+
+    @Inject
+    private HttpServletRequest request;
 
     @AroundInvoke
     public Object checkAuthorization(InvocationContext context) throws Exception {
@@ -118,26 +122,44 @@ public class AuthorizationInterceptor {
     }
 
     private boolean checkAttributes(RequireAttribute annotation, String username) {
-        // In a real implementation, you would fetch user attributes from:
-        // 1. JWT token claims
-        // 2. User profile service
-        // 3. Session context
-        // 4. Database
-
-        // For demo purposes, we'll use a simplified check
-        // In production, inject an AttributeProvider service
+        @SuppressWarnings("unchecked")
+        Map<String, Object> claims = (Map<String, Object>) request.getAttribute("claims");
+        if (claims == null) {
+            LOGGER.warning("No claims found in request for user " + username);
+            return false;
+        }
 
         String attributeName = annotation.name();
         String[] requiredValues = annotation.value();
         RequireAttribute.MatchMode matchMode = annotation.matchMode();
 
-        // Simplified attribute check - would be replaced with actual attribute resolution
-        // Example: Get attributes from JWT claims stored in SecurityContext
+        Object claimValue = claims.get(attributeName);
 
-        LOGGER.info("Checking attribute: " + attributeName + " for values: " + Arrays.toString(requiredValues));
+        if (claimValue == null) {
+            LOGGER.warning("User " + username + " does not have attribute: " + attributeName);
+            return false;
+        }
 
-        // For now, we'll allow access if the user has any required role
-        // This is a placeholder for actual attribute-based logic
-        return true;
+        List<String> userValues;
+        if (claimValue instanceof List) {
+            userValues = ((List<?>) claimValue).stream().map(String::valueOf).toList();
+        } else {
+            userValues = List.of(String.valueOf(claimValue));
+        }
+
+        LOGGER.info("Checking attribute: " + attributeName + " with values " + userValues + " against required " + Arrays.toString(requiredValues));
+
+        boolean match;
+        if (matchMode == RequireAttribute.MatchMode.ANY) {
+            match = Arrays.stream(requiredValues).anyMatch(userValues::contains);
+        } else { // ALL
+            match = Arrays.stream(requiredValues).allMatch(userValues::contains);
+        }
+
+        if (!match) {
+            LOGGER.warning("Attribute check failed for user " + username + ". Required: " + Arrays.toString(requiredValues) + ", Found: " + userValues);
+        }
+
+        return match;
     }
 }
