@@ -29,10 +29,6 @@ public class KeycloakConfig implements Serializable {
     @ConfigProperty(name = "keycloak.client-secret")
     private String clientSecret;
 
-    @Inject
-    @ConfigProperty(name = "keycloak.issuer")
-    private String issuer;
-
     public String getRealm() {
         return realm;
     }
@@ -50,7 +46,7 @@ public class KeycloakConfig implements Serializable {
     }
 
     public String getIssuer() {
-        return issuer;
+        return authServerUrl + "/realms/" + realm;
     }
 
     public String getTokenEndpoint() {

@@ -3,7 +3,7 @@ package fish.payara.healthcare.api;
 import fish.payara.healthcare.model.Patient;
 import fish.payara.healthcare.repository.PatientRepository;
 import fish.payara.security.annotations.Audited;
-import fish.payara.security.annotations.RequireRole;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.security.enterprise.SecurityContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,7 +51,7 @@ public class PatientResource {
             @APIResponse(responseCode = "200", description = "Patients retrieved successfully"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole("ADMIN")
+    @RolesAllowed("ADMIN")
     @Audited(action = "LIST_PATIENTS", level = Audited.SensitivityLevel.HIGH)
     public Response getAllPatients() {
         LOGGER.info("Fetching all patients");
@@ -67,7 +67,7 @@ public class PatientResource {
             @APIResponse(responseCode = "404", description = "Patient not found"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole({"DOCTOR", "NURSE"})
+    @RolesAllowed({"DOCTOR", "NURSE"})
     @Audited(action = "VIEW_PATIENT", level = Audited.SensitivityLevel.CRITICAL)
     public Response getPatient(@PathParam("id") @NotBlank String id) {
         LOGGER.info("Fetching patient: " + id);
@@ -83,7 +83,7 @@ public class PatientResource {
             @APIResponse(responseCode = "200", description = "Patients retrieved"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole({"DOCTOR", "NURSE", "ADMIN"})
+    @RolesAllowed({"DOCTOR", "NURSE", "ADMIN"})
     @Audited(action = "VIEW_DEPARTMENT_PATIENTS", level = Audited.SensitivityLevel.HIGH)
     public Response getPatientsByDepartment(@PathParam("department") @NotBlank String department) {
         @SuppressWarnings("unchecked")
@@ -111,7 +111,7 @@ public class PatientResource {
             @APIResponse(responseCode = "400", description = "Invalid input"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole("DOCTOR")
+    @RolesAllowed("DOCTOR")
     @Audited(action = "CREATE_PATIENT", level = Audited.SensitivityLevel.CRITICAL)
     public Response createPatient(@Valid @NotNull Patient patient) {
         LOGGER.info("Creating new patient: " + patient.getFullName());
@@ -128,7 +128,7 @@ public class PatientResource {
             @APIResponse(responseCode = "404", description = "Patient not found"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole("DOCTOR")
+    @RolesAllowed("DOCTOR")
     @Audited(action = "UPDATE_PATIENT", level = Audited.SensitivityLevel.CRITICAL)
     public Response updatePatient(
             @PathParam("id") @NotBlank String id,
@@ -151,7 +151,7 @@ public class PatientResource {
             @APIResponse(responseCode = "404", description = "Patient not found"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole("ADMIN")
+    @RolesAllowed("ADMIN")
     @Audited(action = "DELETE_PATIENT", level = Audited.SensitivityLevel.CRITICAL)
     public Response deletePatient(@PathParam("id") @NotBlank String id) {
         LOGGER.warning("Deleting patient: " + id);
@@ -171,7 +171,7 @@ public class PatientResource {
             @APIResponse(responseCode = "200", description = "Statistics retrieved"),
             @APIResponse(responseCode = "403", description = "Insufficient permissions")
     })
-    @RequireRole({"DOCTOR", "NURSE", "ADMIN"})
+    @RolesAllowed({"DOCTOR", "NURSE", "ADMIN"})
     @Audited(action = "VIEW_STATISTICS", level = Audited.SensitivityLevel.LOW)
     public Response getStatistics() {
         long count = patientRepository.count();

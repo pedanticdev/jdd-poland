@@ -1,7 +1,6 @@
 package fish.payara.security.interceptors;
 
 import fish.payara.security.annotations.RequireAttribute;
-import fish.payara.security.annotations.RequireRole;
 import fish.payara.security.events.SecurityEvent;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Event;
@@ -10,22 +9,23 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import jakarta.security.enterprise.SecurityContext;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.ForbiddenException;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
  * Authorization interceptor implementing Attribute-Based Access Control (ABAC).
- * Evaluates fine-grained permissions based on roles and attributes.
+ * Evaluates fine-grained permissions based on JWT claims.
+ * This is an example of extending Jakarta Security for custom authorization logic.
  */
 @Interceptor
-@RequireRole("")
 @RequireAttribute(name = "", value = "")
 @Priority(Interceptor.Priority.APPLICATION)
 public class AuthorizationInterceptor {
@@ -39,42 +39,19 @@ public class AuthorizationInterceptor {
     private Event<SecurityEvent> securityEventPublisher;
 
     @Inject
-    private HttpServletRequest request;
+    private JsonWebToken jwt;
 
     @AroundInvoke
     public Object checkAuthorization(InvocationContext context) throws Exception {
         Method method = context.getMethod();
         Principal principal = securityContext.getCallerPrincipal();
 
-        if (principal == null) {
+        if (principal == null || jwt == null || jwt.getRawToken() == null) {
             LOGGER.warning("No authenticated user for secured method: " + method.getName());
             throw new ForbiddenException("Authentication required");
         }
 
         String username = principal.getName();
-
-        // Check role-based access
-        RequireRole roleAnnotation = method.getAnnotation(RequireRole.class);
-        if (roleAnnotation == null) {
-            roleAnnotation = method.getDeclaringClass().getAnnotation(RequireRole.class);
-        }
-
-        if (roleAnnotation != null && roleAnnotation.value().length > 0) {
-            if (!checkRoles(roleAnnotation.value(), username)) {
-                LOGGER.warning("Access denied for user " + username + " - insufficient roles for " + method.getName());
-                securityEventPublisher.fire(new SecurityEvent(
-                        SecurityEvent.Type.AUTHORIZATION_FAILURE,
-                        username,
-                        "unknown",
-                        Map.of(
-                                "method", method.getName(),
-                                "requiredRoles", Arrays.toString(roleAnnotation.value()),
-                                "reason", "Insufficient roles"
-                        )
-                ));
-                throw new ForbiddenException("Insufficient permissions");
-            }
-        }
 
         // Check attribute-based access
         RequireAttribute attrAnnotation = method.getAnnotation(RequireAttribute.class);
@@ -88,7 +65,7 @@ public class AuthorizationInterceptor {
                 securityEventPublisher.fire(new SecurityEvent(
                         SecurityEvent.Type.AUTHORIZATION_FAILURE,
                         username,
-                        "unknown",
+                        "unknown", // IP address can be retrieved from request if needed
                         Map.of(
                                 "method", method.getName(),
                                 "requiredAttribute", attrAnnotation.name(),
@@ -100,51 +77,36 @@ public class AuthorizationInterceptor {
             }
         }
 
-        // Authorization successful
+        // Authorization successful for this interceptor's concerns
         securityEventPublisher.fire(new SecurityEvent(
                 SecurityEvent.Type.AUTHORIZATION_SUCCESS,
                 username,
                 "unknown",
-                Map.of("method", method.getName())
+                Map.of("method", method.getName(), "interceptor", "ABAC")
         ));
 
         return context.proceed();
     }
 
-    private boolean checkRoles(String[] requiredRoles, String username) {
-        for (String role : requiredRoles) {
-            if (securityContext.isCallerInRole(role)) {
-                LOGGER.fine("User " + username + " has required role: " + role);
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean checkAttributes(RequireAttribute annotation, String username) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) request.getAttribute("claims");
-        if (claims == null) {
-            LOGGER.warning("No claims found in request for user " + username);
-            return false;
-        }
-
         String attributeName = annotation.name();
         String[] requiredValues = annotation.value();
         RequireAttribute.MatchMode matchMode = annotation.matchMode();
 
-        Object claimValue = claims.get(attributeName);
+        Optional<Object> claimValue = jwt.claim(attributeName);
 
-        if (claimValue == null) {
+        if (claimValue.isEmpty()) {
             LOGGER.warning("User " + username + " does not have attribute: " + attributeName);
             return false;
         }
 
+        Object value = claimValue.get();
         List<String> userValues;
-        if (claimValue instanceof List) {
-            userValues = ((List<?>) claimValue).stream().map(String::valueOf).toList();
+
+        if (value instanceof List) {
+            userValues = ((List<?>) value).stream().map(String::valueOf).toList();
         } else {
-            userValues = List.of(String.valueOf(claimValue));
+            userValues = List.of(String.valueOf(value));
         }
 
         LOGGER.info("Checking attribute: " + attributeName + " with values " + userValues + " against required " + Arrays.toString(requiredValues));

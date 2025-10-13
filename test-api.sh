@@ -21,7 +21,7 @@ get_token() {
 
     echo "🔑 Getting token for user: $username"
 
-    response=$(curl -s -X POST "$BASE_URL/api/security/token" \
+    response=$(curl -s -X POST "$BASE_URL/resources/security/token" \
         -H "Content-Type: application/json" \
         -d "{\"username\":\"$username\",\"password\":\"$password\"}")
 
@@ -45,6 +45,12 @@ test_endpoint() {
     local token=$3
     local description=$4
     local data=$5
+    local expected_status=("200" "201" "204") # Default expected success codes
+
+    # Allow overriding expected status
+    if [[ $6 ]]; then
+        expected_status=($6)
+    fi
 
     echo "🧪 Testing: $description"
     echo "   $method $endpoint"
@@ -63,52 +69,56 @@ test_endpoint() {
     http_code=$(echo "$response" | grep "HTTP_STATUS" | cut -d':' -f2)
     body=$(echo "$response" | sed '/HTTP_STATUS/d')
 
-    if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 201 ] || [ "$http_code" -eq 204 ]; then
+    # Check if http_code is in the array of expected status codes
+    if [[ " ${expected_status[@]} " =~ " ${http_code} " ]]; then
         echo "✅ Success (HTTP $http_code)"
         if [ ! -z "$body" ]; then
             echo "$body" | python3 -m json.tool 2>/dev/null || echo "$body"
         fi
     else
-        echo "❌ Failed (HTTP $http_code)"
+        echo "❌ Failed (HTTP $http_code) - Expected one of: ${expected_status[*]}"
         echo "$body"
     fi
 
     echo ""
 }
 
-# Test 1: Doctor Access
+# Test 1: Doctor Access (dr.smith, Cardiology)
 echo "=========================================="
-echo "Test 1: Doctor Access (Full Permissions)"
+echo "Test 1: Doctor Access (Cardiology Dept)"
 echo "=========================================="
 echo ""
 
 DOCTOR_TOKEN=$(get_token "dr.smith" "doctor123")
 
 if [ ! -z "$DOCTOR_TOKEN" ]; then
-    test_endpoint "GET" "/api/patients" "$DOCTOR_TOKEN" "List all patients (Doctor)"
-    test_endpoint "GET" "/api/patients/P-001" "$DOCTOR_TOKEN" "View specific patient (Doctor)"
-    test_endpoint "GET" "/api/patients/department/Cardiology" "$DOCTOR_TOKEN" "View department patients (Doctor)"
+    test_endpoint "GET" "/resources/patients" "$DOCTOR_TOKEN" "List all patients (Doctor - should fail)" "403"
+    test_endpoint "GET" "/resources/patients/P-001" "$DOCTOR_TOKEN" "View specific patient (Doctor)"
+    test_endpoint "GET" "/resources/patients/department/Cardiology" "$DOCTOR_TOKEN" "View own department patients (Doctor - should succeed)"
+    test_endpoint "GET" "/resources/patients/department/Emergency" "$DOCTOR_TOKEN" "View OTHER department patients (Doctor - should fail)" "403"
 
     NEW_PATIENT='{"firstName":"Test","lastName":"Patient","dateOfBirth":"1990-01-01","email":"test@example.com","department":"Cardiology","assignedDoctor":"Dr. Smith"}'
-    test_endpoint "POST" "/api/patients" "$DOCTOR_TOKEN" "Create new patient (Doctor)" "$NEW_PATIENT"
+    test_endpoint "POST" "/resources/patients" "$DOCTOR_TOKEN" "Create new patient (Doctor)" "$NEW_PATIENT" "201"
 fi
 
 echo ""
 
-# Test 2: Nurse Access
+# Test 2: Nurse Access (nurse.jones, Emergency)
 echo "=========================================="
-echo "Test 2: Nurse Access (Limited Permissions)"
+echo "Test 2: Nurse Access (Emergency Dept)"
 echo "=========================================="
 echo ""
 
 NURSE_TOKEN=$(get_token "nurse.jones" "nurse123")
 
 if [ ! -z "$NURSE_TOKEN" ]; then
-    test_endpoint "GET" "/api/patients" "$NURSE_TOKEN" "List all patients (Nurse)"
-    test_endpoint "GET" "/api/patients/P-001" "$NURSE_TOKEN" "View specific patient (Nurse)"
+    test_endpoint "GET" "/resources/patients" "$NURSE_TOKEN" "List all patients (Nurse - should fail)" "403"
+    test_endpoint "GET" "/resources/patients/P-003" "$NURSE_TOKEN" "View specific patient (Nurse)"
+    test_endpoint "GET" "/resources/patients/department/Emergency" "$NURSE_TOKEN" "View own department patients (Nurse - should succeed)"
+    test_endpoint "GET" "/resources/patients/department/Cardiology" "$NURSE_TOKEN" "View OTHER department patients (Nurse - should fail)" "403"
 
     NEW_PATIENT='{"firstName":"Should","lastName":"Fail","dateOfBirth":"1990-01-01"}'
-    test_endpoint "POST" "/api/patients" "$NURSE_TOKEN" "Create new patient (Nurse - should fail)" "$NEW_PATIENT"
+    test_endpoint "POST" "/resources/patients" "$NURSE_TOKEN" "Create new patient (Nurse - should fail)" "$NEW_PATIENT" "403"
 fi
 
 echo ""
@@ -122,8 +132,8 @@ echo ""
 PATIENT_TOKEN=$(get_token "patient.doe" "patient123")
 
 if [ ! -z "$PATIENT_TOKEN" ]; then
-    test_endpoint "GET" "/api/patients" "$PATIENT_TOKEN" "List all patients (Patient - should fail)"
-    test_endpoint "GET" "/api/patients/P-001" "$PATIENT_TOKEN" "View patient record (Patient - should fail)"
+    test_endpoint "GET" "/resources/patients" "$PATIENT_TOKEN" "List all patients (Patient - should fail)" "403"
+    test_endpoint "GET" "/resources/patients/P-001" "$PATIENT_TOKEN" "View patient record (Patient - should fail)" "403"
 fi
 
 echo ""
@@ -137,8 +147,9 @@ echo ""
 ADMIN_TOKEN=$(get_token "admin" "admin123")
 
 if [ ! -z "$ADMIN_TOKEN" ]; then
-    test_endpoint "GET" "/api/patients/stats" "$ADMIN_TOKEN" "View statistics (Admin)"
-    test_endpoint "DELETE" "/api/patients/P-999" "$ADMIN_TOKEN" "Delete patient (Admin - non-existent)"
+    test_endpoint "GET" "/resources/patients" "$ADMIN_TOKEN" "List all patients (Admin - should succeed)"
+    test_endpoint "GET" "/resources/patients/stats" "$ADMIN_TOKEN" "View statistics (Admin)"
+    test_endpoint "DELETE" "/resources/patients/P-005" "$ADMIN_TOKEN" "Delete patient (Admin - should succeed)" "204"
 fi
 
 echo ""
@@ -149,28 +160,21 @@ echo "Test 5: Security Monitoring & Events"
 echo "=========================================="
 echo ""
 
-if [ ! -z "$DOCTOR_TOKEN" ]; then
-    test_endpoint "GET" "/api/security/events?limit=10" "$DOCTOR_TOKEN" "View security events"
-    test_endpoint "GET" "/api/security/config" "$DOCTOR_TOKEN" "View security configuration"
+if [ ! -z "$ADMIN_TOKEN" ]; then
+    test_endpoint "GET" "/resources/security/events?limit=20" "$ADMIN_TOKEN" "View security events (Admin)"
+    test_endpoint "GET" "/resources/security/config" "$ADMIN_TOKEN" "View security configuration (Admin)"
 fi
 
 echo ""
 
 # Test 6: Unauthenticated Access
 echo "=========================================="
-echo "Test 6: Unauthenticated Access (Should Fail)"
+echo "Test 6: Unauthenticated Access"
 echo "=========================================="
 echo ""
 
-echo "🧪 Testing: Unauthenticated access to patients"
-response=$(curl -s -w "\nHTTP_STATUS:%{http_code}" "$BASE_URL/api/patients")
-http_code=$(echo "$response" | grep "HTTP_STATUS" | cut -d':' -f2)
-
-if [ "$http_code" -eq 401 ] || [ "$http_code" -eq 403 ]; then
-    echo "✅ Correctly denied (HTTP $http_code)"
-else
-    echo "❌ Unexpected response (HTTP $http_code)"
-fi
+test_endpoint "GET" "/resources/patients" "" "Access patients (No Token - should fail)" "401"
+test_endpoint "GET" "/resources/patients/stats" "" "Access stats (No Token - should fail)" "401"
 
 echo ""
 echo "=========================================="
@@ -178,10 +182,9 @@ echo "Demo Complete!"
 echo "=========================================="
 echo ""
 echo "Key Observations:"
-echo "- Doctors have full access to patient records"
-echo "- Nurses can view but not create/modify"
-echo "- Patients have no access to other records"
-echo "- Admins can perform system operations"
-echo "- All operations are logged for audit"
-echo "- JWT tokens are validated on every request"
+echo "- Roles are enforced: Admins can list all patients, but Doctors/Nurses cannot."
+echo "- Attributes are enforced: Doctors/Nurses can only view patients in their own department."
+echo "- Permissions are granular: Nurses can view patients but cannot create them."
+echo "- All operations are logged for audit (see /resources/security/events)."
+echo "- Standard MicroProfile JWT and Jakarta Security APIs handle all validation."
 echo ""

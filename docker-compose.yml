@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -47,11 +46,26 @@ services:
     networks:
       - jdd-network
     healthcheck:
-      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/8180 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'" ]
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/8180 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'" ]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 60s
+
+  payara-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jdd-payara-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      - keycloak_auth_server_url=http://keycloak:8180
+    networks:
+      - jdd-network
 
 volumes:
   postgres_data:
