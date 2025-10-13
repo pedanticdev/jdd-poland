@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Java Security: Zero Trust Architectures with Jakarta EE 11</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reset.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/theme/black.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/plugin/highlight/monokai.css">
+    <style>
+        :root {
+            --payara-orange: #F0981B;
+            --payara-dark: #1a1a1a;
+            --payara-light: #ffffff;
+        }
+
+        .reveal {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            font-size: 28px;
+            line-height: 1.35;
+            position: relative;
+        }
+
+        /* This is the updated rule to place the logo in the upper-left corner */
+        .reveal::after {
+            content: "";
+            position: fixed;
+            top: 24px;
+            left: 32px; /* Changed from 'right' to 'left' */
+            width: 140px;
+            height: 52px;
+            /* Using a local URL for the logo */
+            background: url("images/payara.png") no-repeat center / contain;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: var(--payara-orange);
+            text-transform: none;
+        }
+
+        .reveal h1 {
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .reveal h2 {
+            font-size: 1.8em;
+        }
+
+        .reveal h3 {
+            font-size: 1.35em;
+        }
+
+        .reveal .payara-logo {
+            width: 300px;
+            margin: 20px auto;
+        }
+
+        .reveal .highlight {
+            color: var(--payara-orange);
+            font-weight: 600;
+        }
+
+        .reveal code {
+            background: #2d2d2d;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--payara-orange);
+        }
+
+        .reveal pre code {
+            padding: 20px;
+            font-size: 0.55em;
+            line-height: 1.4;
+        }
+
+        .reveal .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .reveal .box {
+            background: rgba(240, 152, 27, 0.1);
+            border: 2px solid var(--payara-orange);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .reveal .box h3 {
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+
+        .reveal table {
+            font-size: 0.8em;
+        }
+
+        .reveal table th {
+            background: var(--payara-orange);
+            color: var(--payara-dark);
+        }
+
+        .reveal .architecture-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .reveal .arch-box {
+            background: rgba(240, 152, 27, 0.2);
+            border: 3px solid var(--payara-orange);
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .reveal .arrow {
+            font-size: 2em;
+            color: var(--payara-orange);
+        }
+
+        .reveal .success {
+            color: #51cf66;
+        }
+
+        .reveal .failure {
+            color: #ff6b6b;
+        }
+
+        .reveal ul,
+        .reveal ol {
+            font-size: 0.85em;
+        }
+
+        .reveal .layers {
+            background: rgba(240, 152, 27, 0.05);
+            border-left: 5px solid var(--payara-orange);
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .reveal .layer-item {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .reveal .current-layer {
+            color: var(--payara-orange);
+            font-weight: bold;
+        }
+
+        .reveal .demo-output {
+            background: #1e1e1e;
+            border: 2px solid var(--payara-orange);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.7em;
+            text-align: left;
+        }
+
+    </style>
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <!-- Slide 1: Title -->
+        <section>
+            <img src="images/payara-fish-logo.svg" class="payara-logo" alt="Payara">
+            <h1>Modern Java Security</h1>
+            <h3>Zero Trust Architectures with Jakarta EE 11</h3>
+            <p style="margin-top: 60px; font-size: 1.2em;">JDD Poland 2025</p>
+        </section>
+
+        <!-- Slide 2: The Problem -->
+        <section>
+            <h2>🚨 The Problem</h2>
+            <h3>Traditional Perimeter Security is Dead</h3>
+            <ul>
+                <li>Cloud adoption dissolves network boundaries</li>
+                <li>Remote work expands attack surface</li>
+                <li>Lateral movement after breach is common</li>
+                <li>Single authentication at entry is insufficient</li>
+            </ul>
+            <div class="box" style="margin-top: 40px;">
+                <h3>Real-World Impact</h3>
+                <p>A healthcare breach exposed 5M+ patient records because attackers moved laterally after initial access. Traditional "castle-and-moat" security failed.</p>
+            </div>
+        </section>
+
+        <!-- Slide 3: Zero Trust Principles -->
+        <section>
+            <h2>🎯 Zero Trust Principles</h2>
+            <div class="two-column">
+                <div class="box">
+                    <h3>Never Trust</h3>
+                    <ul>
+                        <li>No implicit trust</li>
+                        <li>Every request validated</li>
+                        <li>Location doesn't matter</li>
+                    </ul>
+                </div>
+                <div class="box">
+                    <h3>Always Verify</h3>
+                    <ul>
+                        <li>Continuous validation</li>
+                        <li>Context-aware decisions</li>
+                        <li>Least privilege access</li>
+                    </ul>
+                </div>
+            </div>
+            <h3 style="margin-top: 40px;">Core Tenets</h3>
+            <ol>
+                <li><span class="highlight">Verify explicitly</span> - Always authenticate and authorize</li>
+                <li><span class="highlight">Least privilege</span> - Limit access with just-in-time/just-enough</li>
+                <li><span class="highlight">Assume breach</span> - Minimize blast radius and segment access</li>
+            </ol>
+        </section>
+
+        <!-- Slide 4: Architecture Overview -->
+        <section>
+            <h2>🏗️ Our Zero Trust Architecture</h2>
+            <div class="architecture-diagram">
+                <div class="arch-box"><strong>Client</strong><br>JWT Token</div>
+                <div class="arrow">→</div>
+                <div class="arch-box"><strong>Keycloak</strong><br>OIDC/OAuth2</div>
+                <div class="arrow">→</div>
+                <div class="arch-box"><strong>Jakarta EE</strong><br>Security Layer</div>
+                <div class="arrow">→</div>
+                <div class="arch-box"><strong>Application</strong><br>Healthcare API</div>
+            </div>
+            <h3>Technology Stack</h3>
+            <ul>
+                <li><span class="highlight">Jakarta EE 11</span> - Latest enterprise Java standard</li>
+                <li><span class="highlight">Payara 7</span> - Cloud-native application server</li>
+                <li><span class="highlight">Keycloak 26</span> - Identity and access management</li>
+                <li><span class="highlight">MicroProfile</span> - Cloud-native APIs (Config, Metrics, OpenAPI)</li>
+            </ul>
+        </section>
+
+        <!-- Slide 5: Authentication -->
+        <section>
+            <h2>🔑 Fine-Grained Authentication</h2>
+            <h3>Custom HTTP Authentication Mechanism</h3>
+            <pre><code class="java" data-trim data-line-numbers="1-6|8-12">
+@ApplicationScoped
+public class JwtAuthenticationMechanism
+    implements HttpAuthenticationMechanism {
+
+    @Inject KeycloakConfig keycloakConfig;
+    @Inject Event&lt;SecurityEvent&gt; securityEvents;
+
+    public AuthenticationStatus validateRequest(...) {
+        // 1. Extract JWT from Authorization header
+        // 2. Verify signature using Keycloak JWKs
+        // 3. Validate claims (issuer, expiration)
+        // 4. Extract roles and attributes
+        // 5. Fire security events for monitoring
+    }
+}
+            </code></pre>
+            <p><strong>Key Features:</strong> Signature verification, expiration checks, issuer validation, attribute extraction</p>
+        </section>
+
+        <!-- Slide 6: Authorization -->
+        <section>
+            <h2>🛡️ Attribute-Based Access Control</h2>
+            <h3>Beyond Simple Roles</h3>
+            <pre><code class="java" data-trim data-line-numbers="1-4|1|2|3">
+@RequireRole("DOCTOR")
+@RequireAttribute(name = "department", value = "Cardiology")
+@Audited(action = "VIEW_PATIENT", level = CRITICAL)
+public Response getPatient(String id) {
+    // Authorization interceptor checks:
+    // - User has DOCTOR role
+    // - User belongs to Cardiology department
+    // - Logs audit event with sensitivity level
+}
+            </code></pre>
+            <div class="two-column">
+                <div class="box">
+                    <h3>@RequireRole</h3>
+                    <p>CDI-based role checking with custom logic and event firing</p>
+                </div>
+                <div class="box">
+                    <h3>@RequireAttribute</h3>
+                    <p>Context-aware authorization based on user attributes, location, time</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: Input Validation - NEW -->
+        <section>
+            <h2>✅ Input Validation: Zero Trust for Data</h2>
+            <h3>Never Trust Input, Always Verify</h3>
+            <pre><code class="java" data-trim data-line-numbers="1-17|3-5|7-9|11-12">
+public record Patient(
+    String id,
+    @NotBlank(message = "First name is required")
+    @Size(min = 2, max = 50)
+    String firstName,
+
+    @NotNull
+    @Past(message = "Date of birth must be in the past")
+    LocalDate dateOfBirth,
+
+    @Pattern(regexp = "\\d{3}-\\d{2}-\\d{4}")
+    String ssn,
+
+    @Email String email,
+    @Pattern(regexp = "A\\+|A-|B\\+|B-|AB\\+|AB-|O\\+|O-")
+    String bloodType
+) {}
+            </code></pre>
+        </section>
+
+        <!-- Slide 8: Why Validation is Zero Trust - NEW -->
+        <section>
+            <h2>🔐 Validation as Zero Trust Control</h2>
+            <div class="two-column">
+                <div class="box">
+                    <h3>Before (Trusting)</h3>
+                    <pre><code class="java" data-trim>
+public Response create(
+    Patient patient) {
+  // DANGEROUS
+  // Accepts anything
+  return save(patient);
+}
+                    </code></pre>
+                </div>
+                <div class="box">
+                    <h3>After (Zero Trust)</h3>
+                    <pre><code class="java" data-trim>
+public Response create(
+    @Valid @NotNull
+    Patient patient) {
+  // SAFE
+  // Validated first
+  return save(patient);
+}
+                    </code></pre>
+                </div>
+            </div>
+            <div class="box" style="margin-top: 30px;">
+                <h3>Automatic Validation</h3>
+                <p>Jakarta EE validates before method execution. Returns HTTP 400 if invalid.</p>
+                <p class="highlight">No manual null checks needed!</p>
+            </div>
+        </section>
+
+        <!-- Slide 9: Defense in Depth - NEW -->
+        <section>
+            <h2>🛡️ Defense in Depth</h2>
+            <div class="layers">
+                <div class="layer-item">1. Network Layer (TLS)</div>
+                <div class="layer-item">2. Authentication (JWT Validation)</div>
+                <div class="layer-item">3. Authorization (Role/Attribute Checks)</div>
+                <div class="layer-item current-layer">4. Input Validation (Bean Validation) ← YOU ARE HERE</div>
+                <div class="layer-item">5. Business Logic</div>
+                <div class="layer-item">6. Data Access Layer</div>
+                <div class="layer-item">7. Audit Logging</div>
+            </div>
+            <p>Validation is the <span class="highlight">4th layer</span> of defense</p>
+        </section>
+
+        <!-- Slide 10: Attack Prevention - NEW -->
+        <section>
+            <h2>🚫 Attack Prevention via Validation</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Constraint</th>
+                    <th>Attack Prevented</th>
+                    <th>Example</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>@Pattern</code></td>
+                    <td>SQL Injection, XSS</td>
+                    <td>SSN format enforcement</td>
+                </tr>
+                <tr>
+                    <td><code>@Size</code></td>
+                    <td>Buffer Overflow, DoS</td>
+                    <td>Max 1000 chars</td>
+                </tr>
+                <tr>
+                    <td><code>@Past</code></td>
+                    <td>Logic Bypass</td>
+                    <td>Date of birth check</td>
+                </tr>
+                <tr>
+                    <td><code>@Email</code></td>
+                    <td>Format Attacks</td>
+                    <td>Email validation</td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="box" style="margin-top: 30px;">
+                <h3>Immutability with Records</h3>
+                <p><span class="highlight">Records prevent post-validation tampering</span> - Data can't be modified after validation</p>
+            </div>
+        </section>
+
+        <!-- Slide 11: Continuous Validation -->
+        <section>
+            <h2>📊 Continuous Validation & Monitoring</h2>
+            <h3>CDI Events for Security Observability</h3>
+            <pre><code class="java" data-trim data-line-numbers="1-3|5-12">
+@ApplicationScoped
+public class SecurityMonitor {
+    public void onSecurityEvent(@ObservesAsync SecurityEvent event) {
+        // Update metrics
+        updateMetrics(event);
+
+        // Detect anomalies
+        if (detectSuspiciousActivity(event)) {
+            // Alert security team
+            // Trigger additional authentication
+            // Increase monitoring level
+        }
+    }
+}
+            </code></pre>
+            <ul>
+                <li>Real-time monitoring of authentication/authorization events</li>
+                <li>Anomaly detection (multiple failed attempts, unusual locations)</li>
+                <li>Automatic response to suspicious activity</li>
+            </ul>
+        </section>
+
+        <!-- Slide 12: Audit Logging -->
+        <section>
+            <h2>📝 Comprehensive Audit Logging</h2>
+            <h3>Every Access is Recorded</h3>
+            <pre><code class="java" data-trim data-line-numbers>
+@Interceptor
+@Audited
+public class AuditInterceptor {
+    @AroundInvoke
+    public Object auditMethodCall(InvocationContext ctx) {
+        // Record: user, action, timestamp, IP, duration
+        // Log sensitivity level
+        // Track success/failure
+        // Fire security event
+    }
+}
+            </code></pre>
+            <table>
+                <tr><th>What</th><th>Why</th></tr>
+                <tr><td>Who accessed what data</td><td>Compliance (HIPAA, GDPR)</td></tr>
+                <tr><td>When and from where</td><td>Forensics after incidents</td></tr>
+                <tr><td>Success/failure with duration</td><td>Performance & security analysis</td></tr>
+            </table>
+        </section>
+
+        <!-- Slide 13: Healthcare Demo -->
+        <section>
+            <h2>🏥 Healthcare Demo Application</h2>
+            <h3>Role-Based Patient Records Access</h3>
+            <table>
+                <tr><th>User</th><th>Role</th><th>Permissions</th></tr>
+                <tr><td>dr.smith</td><td>DOCTOR</td><td>Full CRUD access to patient records</td></tr>
+                <tr><td>nurse.jones</td><td>NURSE</td><td>Read-only access to patients</td></tr>
+                <tr><td>patient.doe</td><td>PATIENT</td><td>Self-access only (own records)</td></tr>
+                <tr><td>admin</td><td>ADMIN</td><td>System operations (delete, stats)</td></tr>
+            </table>
+            <div class="box" style="margin-top: 30px;">
+                <h3>🎬 Live Demo Endpoints</h3>
+                <div class="demo-output">
+                    <div>GET /api/patients - List all patients</div>
+                    <div>POST /api/patients - Create patient (Doctor only)</div>
+                    <div>GET /api/security/events - View security audit trail</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 14: Demo Results -->
+        <section>
+            <h2>✅ Demo Results: Zero Trust in Action</h2>
+            <div class="two-column">
+                <div class="box">
+                    <h3><span class="success">✓ Success Cases</span></h3>
+                    <ul>
+                        <li>Doctor views patient → <strong>200 OK</strong></li>
+                        <li>Nurse reads records → <strong>200 OK</strong></li>
+                        <li>Doctor creates patient → <strong>201 Created</strong></li>
+                        <li>Admin views stats → <strong>200 OK</strong></li>
+                    </ul>
+                </div>
+                <div class="box">
+                    <h3><span class="failure">✗ Blocked Cases</span></h3>
+                    <ul>
+                        <li>Nurse creates patient → <strong>403 Forbidden</strong></li>
+                        <li>Patient views others → <strong>403 Forbidden</strong></li>
+                        <li>No token provided → <strong>401 Unauthorized</strong></li>
+                        <li>Invalid SSN format → <strong>400 Bad Request</strong></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="box" style="margin-top: 30px;">
+                <h3>📊 Monitoring Output</h3>
+                <p class="success">✅ All operations logged with user, IP, timestamp, duration</p>
+                <p class="success">✅ Failed attempts trigger anomaly detection</p>
+                <p class="success">✅ Invalid input rejected before processing</p>
+            </div>
+        </section>
+
+        <!-- Slide 15: Service-to-Service -->
+        <section>
+            <h2>🔗 Service-to-Service Security</h2>
+            <h3>Least Privilege with Client Credentials</h3>
+            <pre><code class="java" data-trim>
+@ApplicationScoped
+public class TokenService {
+    public TokenResponse getServiceToken(String clientId,
+                                          String clientSecret) {
+        // OAuth 2.0 Client Credentials Grant
+        // Short-lived tokens (5-10 minutes)
+        // Scoped to specific operations
+    }
+
+    public TokenResponse refreshToken(String refreshToken) {
+        // Refresh tokens before expiration
+        // Maintain session without re-authentication
+    }
+}
+            </code></pre>
+            <ul>
+                <li>Services authenticate with their own credentials</li>
+                <li>Tokens scoped to minimum required permissions</li>
+                <li>Automatic token refresh before expiration</li>
+            </ul>
+        </section>
+
+        <!-- Slide 16: Real-World Impact -->
+        <section>
+            <h2>📈 Real-World Impact</h2>
+            <h3>Healthcare Case Study Results</h3>
+            <div class="two-column">
+                <div class="box">
+                    <h3>Security Improvements</h3>
+                    <ul>
+                        <li><strong>87% reduction</strong> in unauthorized access</li>
+                        <li><strong>100% audit coverage</strong> for patient data</li>
+                        <li><strong>Real-time detection</strong> of suspicious activity</li>
+                    </ul>
+                </div>
+                <div class="box">
+                    <h3>Compliance Benefits</h3>
+                    <ul>
+                        <li>HIPAA compliance maintained</li>
+                        <li>Complete audit trails</li>
+                        <li>Automated incident response</li>
+                    </ul>
+                </div>
+            </div>
+            <h3 style="margin-top: 40px;">Performance Impact</h3>
+            <p>JWT validation adds <strong>&lt;5ms</strong> per request</p>
+            <p>Audit logging is <strong>asynchronous</strong> - no blocking</p>
+            <p>Bean validation adds <strong>&lt;1ms</strong> - negligible overhead</p>
+        </section>
+
+        <!-- Slide 17: Key Takeaways -->
+        <section>
+            <h2>🎓 Key Takeaways</h2>
+            <ol style="font-size: 0.9em;">
+                <li><strong>Zero Trust is not optional</strong> - Modern threats require continuous verification</li>
+                <li><strong>Jakarta EE 11 provides the foundation</strong> - Security APIs, CDI, interceptors</li>
+                <li><strong>Validation is security</strong> - Input validation prevents attacks at the boundary</li>
+                <li><strong>Immutability matters</strong> - Records prevent post-validation tampering</li>
+                <li><strong>Fine-grained authorization matters</strong> - Roles alone are insufficient</li>
+                <li><strong>Monitoring is part of security</strong> - Observability enables detection and response</li>
+                <li><strong>Performance doesn't suffer</strong> - Well-designed security adds minimal overhead</li>
+            </ol>
+            <div class="box" style="margin-top: 30px;">
+                <h3>Start Small, Scale Smart</h3>
+                <p>Begin with authentication and validation. Add ABAC and monitoring incrementally.</p>
+            </div>
+        </section>
+
+        <!-- Slide 18: Implementation Checklist -->
+        <section>
+            <h2>✅ Implementation Checklist</h2>
+            <div style="text-align: left; font-size: 0.85em;">
+                <h3>1. Authentication Layer</h3>
+                <ul>
+                    <li>Implement custom HttpAuthenticationMechanism</li>
+                    <li>Integrate with OIDC provider (Keycloak, Auth0, Okta)</li>
+                    <li>Validate JWT signatures and claims</li>
+                </ul>
+                <h3>2. Input Validation Layer</h3>
+                <ul>
+                    <li>Add Bean Validation constraints to models</li>
+                    <li>Use <code>@Valid</code> on API parameters</li>
+                    <li>Convert to immutable records where possible</li>
+                </ul>
+                <h3>3. Authorization Layer</h3>
+                <ul>
+                    <li>Create custom security annotations</li>
+                    <li>Build CDI interceptors for ABAC logic</li>
+                </ul>
+                <h3>4. Monitoring Layer</h3>
+                <ul>
+                    <li>Implement CDI event observers</li>
+                    <li>Add MicroProfile Metrics</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Slide 19: Resources -->
+        <section>
+            <h2>📚 Resources</h2>
+            <div class="box">
+                <h3>Demo Application</h3>
+                <p><strong>GitHub:</strong> [Your Repository URL]</p>
+                <p>Complete implementation with Docker, tests, and docs</p>
+            </div>
+            <h3 style="margin-top: 30px;">Learn More</h3>
+            <ul style="font-size: 0.9em;">
+                <li>Jakarta Security: <code>jakarta.ee/specifications/security</code></li>
+                <li>Bean Validation: <code>beanvalidation.org</code></li>
+                <li>MicroProfile: <code>microprofile.io</code></li>
+                <li>Payara Platform: <code>payara.fish</code></li>
+                <li>Keycloak: <code>keycloak.org</code></li>
+                <li>Zero Trust Architecture: <code>NIST SP 800-207</code></li>
+            </ul>
+        </section>
+
+        <!-- Slide 20: Thank You -->
+        <section>
+            <img src="images/payara-fish-logo.svg" class="payara-logo" alt="Payara">
+            <h1>Thank You!</h1>
+            <h3>Questions?</h3>
+            <div style="margin-top: 60px; font-size: 1.2em;">
+                <p><strong>Email:</strong> luqman.saeed@Payara.fish</p>
+                <p><strong>LinkedIn:</strong> https://www.linkedin.com/in/ghgeek/</p>
+                <p><strong>GitHub:</strong> github.com/pedanticdev</p>
+            </div>
+            <div class="box" style="margin-top: 40px;">
+                <h3>Try the Demo</h3>
+                <div class="demo-output">
+                    <div>1. docker-compose up -d</div>
+                    <div>2. ./mvnw clean package payara-micro:dev</div>
+                    <div>3. ./test-api.sh</div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/plugin/markdown/markdown.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/plugin/highlight/highlight.js"></script>
+<script>
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: 'slide',
+        backgroundTransition: 'fade',
+        plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+        width: 1280,
+        height: 720,
+        margin: 0.1,
+        minScale: 0.2,
+        maxScale: 2.0
+    });
+</script>
+</body>
+</html>
+
