@@ -1,52 +1,224 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Welcome to Payara</title>
-
-    <style>
-        body {
-            background-image: linear-gradient(rgba(0, 44, 62), rgba(0, 44, 62, .8), rgba(0, 44, 62));
-            color: #fff;
-        }
-
-        a {
-            font-weight: bold;
-            color: white;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Trust Healthcare Platform</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="images/payara-fish-logo.svg" alt="Payara Logo" class="logo">
+                    <div class="app-title">
+                        <h1>Zero Trust Healthcare</h1>
+                        <p class="subtitle">Powered by Jakarta EE 11 & Payara</p>
+                    </div>
+                </div>
+                <div class="user-section" id="userSection" style="display: none;">
+                    <span class="user-info" id="userInfo"></span>
+                    <button class="btn btn-secondary btn-small" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </header>
 
-<h1>Greetings from Payara!</h1>
-<p>
-    Thank you for visiting <a href="https://www.payara.fish/">Payara</a>! We're thrilled to have you here. Payara is
-    your go-to destination for all things Jakarta EE and Java enterprise applications.
-</p>
-<p>
-    <a href="https://www.payara.fish/"><img width="50%" src="images/payara-fish-logo.svg" alt="Payara Logo"></a>
-</p>
-<h2>RESTful Service</h2>
-<p>
-    The REST end-point is available at <a href="resources/hello">resources/hello</a>.
-    You can supply a name to the end-point using a query parameter like this: <a href="resources/hello?name=John">resources/hello?name=John</a>
-</p>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Login Section -->
+            <section id="loginSection" class="login-section">
+                <div class="login-container">
+                    <div class="login-card">
+                        <h2>Welcome Back</h2>
+                        <p class="login-subtitle">Sign in to access the healthcare platform</p>
 
+                        <form id="loginForm" class="login-form">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="username" name="username" required
+                                       placeholder="Enter your username" autocomplete="username">
+                            </div>
 
-<h2>API Documentation</h2>
-<p>
-    Explore the API documentation for the RESTful service using Swagger and OpenAPI. You can access the documentation at
-    the following link:
-    <a href="swagger.html">Swagger and OpenAPI Documentation</a>
-</p>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" required
+                                       placeholder="Enter your password" autocomplete="current-password">
+                            </div>
 
-<h2>Why Choose Payara?</h2>
-<p>
-    Dive into the world of Jakarta EE with Payara. Our robust application server empowers you to build and deploy
-    scalable, enterprise-ready solutions with ease.
-</p>
-<p>
-    Explore the incredible features of Payara, from seamless clustering to unparalleled support. Get started on your
-    journey with Payara by checking out our <a href="https://docs.payara.fish/">documentation</a>.
-</p>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                            </div>
+
+                            <div id="loginError" class="error-message" style="display: none;"></div>
+                        </form>
+
+                        <div class="test-users">
+                            <p class="test-users-title">Test Users:</p>
+                            <div class="test-user-grid">
+                                <button class="test-user-btn" data-username="dr.smith" data-password="doctor123">
+                                    <span class="role-badge doctor">Doctor</span>
+                                    <span>dr.smith</span>
+                                </button>
+                                <button class="test-user-btn" data-username="nurse.jones" data-password="nurse123">
+                                    <span class="role-badge nurse">Nurse</span>
+                                    <span>nurse.jones</span>
+                                </button>
+                                <button class="test-user-btn" data-username="admin" data-password="admin123">
+                                    <span class="role-badge admin">Admin</span>
+                                    <span>admin</span>
+                                </button>
+                                <button class="test-user-btn" data-username="patient.doe" data-password="patient123">
+                                    <span class="role-badge patient">Patient</span>
+                                    <span>patient.doe</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="dashboard-section" style="display: none;">
+                <!-- Quick Stats -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalPatients">-</div>
+                            <div class="stat-label">Total Patients</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏥</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="departmentCount">-</div>
+                            <div class="stat-label">Departments</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="authSuccess">-</div>
+                            <div class="stat-label">Auth Success</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="authFailures">-</div>
+                            <div class="stat-label">Auth Failures</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="patients">Patients</button>
+                    <button class="tab-btn" data-tab="security">Security Events</button>
+                    <button class="tab-btn" data-tab="config">Configuration</button>
+                </div>
+
+                <!-- Patients Tab -->
+                <div id="patientsTab" class="tab-content active">
+                    <div class="content-header">
+                        <h2>Patient Records</h2>
+                        <button class="btn btn-primary" id="addPatientBtn">+ Add Patient</button>
+                    </div>
+
+                    <div class="department-filter" id="departmentFilter" style="display: none;">
+                        <label>Filter by Department:</label>
+                        <select id="departmentSelect">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+
+                    <div id="patientsContainer" class="patients-grid">
+                        <div class="loading">Loading patients...</div>
+                    </div>
+                </div>
+
+                <!-- Security Events Tab -->
+                <div id="securityTab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Security Events</h2>
+                        <button class="btn btn-secondary" id="refreshEventsBtn">↻ Refresh</button>
+                    </div>
+                    <div id="eventsContainer" class="events-list">
+                        <div class="loading">Loading security events...</div>
+                    </div>
+                </div>
+
+                <!-- Configuration Tab -->
+                <div id="configTab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Security Configuration</h2>
+                    </div>
+                    <div id="configContainer" class="config-container">
+                        <div class="loading">Loading configuration...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal for Adding Patient -->
+        <div id="addPatientModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add New Patient</h3>
+                    <button class="modal-close" id="closeModalBtn">&times;</button>
+                </div>
+                <form id="addPatientForm" class="patient-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dateOfBirth">Date of Birth *</label>
+                            <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="department">Department *</label>
+                            <select id="department" name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="Cardiology">Cardiology</option>
+                                <option value="Emergency">Emergency</option>
+                                <option value="Pediatrics">Pediatrics</option>
+                                <option value="Orthopedics">Orthopedics</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="assignedDoctor">Assigned Doctor</label>
+                            <input type="text" id="assignedDoctor" name="assignedDoctor">
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Patient</button>
+                    </div>
+                    <div id="addPatientError" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <script src="js/app.js"></script>
 </body>
 </html>

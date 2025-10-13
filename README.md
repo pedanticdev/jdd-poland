@@ -55,12 +55,14 @@ This script uses the pre-configured users to test various endpoints and demonstr
 
 ## Pre-configured Test Users
 
-| Username    | Password   | Role    | Department | Description                                           |
-|-------------|------------|---------|------------|-------------------------------------------------------|
-| dr.smith    | doctor123  | DOCTOR  | Cardiology | Can read/write patient records in the Cardiology dept. |
-| nurse.jones | nurse123   | NURSE   | Emergency  | Can read patient records in the Emergency dept.        |
+**Note:** The passwords listed below are temporary. Upon first login via the Keycloak UI, you will be required to set a new password.
+
+| Username    | Password   | Role    | Department | Description                                                   |
+|-------------|------------|---------|------------|---------------------------------------------------------------|
+| dr.smith    | doctor123  | DOCTOR  | Cardiology | Can read/write patient records in the Cardiology dept.        |
+| nurse.jones | nurse123   | NURSE   | Emergency  | Can read patient records in the Emergency dept.               |
 | admin       | admin123   | ADMIN   | (N/A)      | Can perform system-wide operations (e.g., list all patients). |
-| patient.doe | patient123 | PATIENT | (N/A)      | Has no access to the patient API.                     |
+| patient.doe | patient123 | PATIENT | (N/A)      | Has no access to the patient API.                             |
 
 ## Architecture
 

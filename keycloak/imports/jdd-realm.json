@@ -153,8 +153,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "doctor123",
-          "temporary": false
+"temporary": true
         }
       ],
       "realmRoles": [
@@ -178,9 +177,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "nurse123",
-          "temporary": false
-        }
+          "temporary": true        }
       ],
       "realmRoles": [
         "NURSE"
@@ -203,8 +200,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "admin123",
-          "temporary": false
+"temporary": true
         }
       ],
       "realmRoles": [
@@ -221,7 +217,7 @@
         {
           "type": "password",
           "value": "patient123",
-          "temporary": false
+          "temporary": true
         }
       ],
       "realmRoles": [

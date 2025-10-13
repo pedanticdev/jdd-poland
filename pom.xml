@@ -61,6 +61,21 @@
             <version>1.1.7</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Database -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Jakarta Data -->
+        <dependency>
+            <groupId>jakarta.data</groupId>
+            <artifactId>jakarta.data-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

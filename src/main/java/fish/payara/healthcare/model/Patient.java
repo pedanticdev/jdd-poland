@@ -1,108 +1,210 @@
 package fish.payara.healthcare.model;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-/**
- * Patient record for healthcare demo application.
- * Represents sensitive patient data requiring strict access control.
- * Immutable by design for security and thread-safety.
- */
-public record Patient(
-        String id,
+@Entity
+@Table(name = "patient")
+public class Patient {
 
-        @NotBlank(message = "First name is required")
-        @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
-        String firstName,
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
-        @NotBlank(message = "Last name is required")
-        @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
-        String lastName,
+    @NotBlank(message = "First name is required")
+    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
+    @Column(name = "first_name")
+    private String firstName;
 
-        @NotNull(message = "Date of birth is required")
-        @Past(message = "Date of birth must be in the past")
-        LocalDate dateOfBirth,
+    @NotBlank(message = "Last name is required")
+    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
+    @Column(name = "last_name")
+    private String lastName;
 
-        @Pattern(regexp = "\\d{3}-\\d{2}-\\d{4}", message = "SSN must be in format XXX-XX-XXXX")
-        String ssn,
+    @NotNull(message = "Date of birth is required")
+    @Past(message = "Date of birth must be in the past")
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
-        @Email(message = "Invalid email format")
-        String email,
+    @Pattern(regexp = "\\d{3}-\\d{2}-\\d{4}", message = "SSN must be in format XXX-XX-XXXX")
+    @Column(name = "ssn")
+    private String ssn;
 
-        @Pattern(regexp = "\\d{3}-\\d{4}", message = "Phone must be in format XXX-XXXX")
-        String phone,
+    @Email(message = "Invalid email format")
+    @Column(name = "email")
+    private String email;
 
-        @Size(max = 200, message = "Address must not exceed 200 characters")
-        String address,
+    @Pattern(regexp = "\\d{3}-\\d{4}", message = "Phone must be in format XXX-XXXX")
+    @Column(name = "phone")
+    private String phone;
 
-        @Pattern(regexp = "A\\+|A-|B\\+|B-|AB\\+|AB-|O\\+|O-", message = "Invalid blood type")
-        String bloodType,
+    @Size(max = 200, message = "Address must not exceed 200 characters")
+    @Column(name = "address")
+    private String address;
 
-        @Size(max = 500, message = "Allergies description must not exceed 500 characters")
-        String allergies,
+    @Pattern(regexp = "A\\+\|A-\|B\\+\|B-\|AB\\+\|AB-\|O\\+\|O-", message = "Invalid blood type")
+    @Column(name = "blood_type")
+    private String bloodType;
 
-        @Size(max = 1000, message = "Medical conditions must not exceed 1000 characters")
-        String medicalConditions,
+    @Size(max = 500, message = "Allergies description must not exceed 500 characters")
+    @Column(name = "allergies")
+    private String allergies;
 
-        @Size(max = 100, message = "Assigned doctor name must not exceed 100 characters")
-        String assignedDoctor,
+    @Size(max = 1000, message = "Medical conditions must not exceed 1000 characters")
+    @Column(name = "medical_conditions")
+    private String medicalConditions;
 
-        @Size(max = 50, message = "Department name must not exceed 50 characters")
-        String department,
+    @Size(max = 100, message = "Assigned doctor name must not exceed 100 characters")
+    @Column(name = "assigned_doctor")
+    private String assignedDoctor;
 
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
-) {
-    /**
-     * Compact constructor for creating new patients without ID/timestamps
-     */
-    public Patient(String firstName, String lastName, LocalDate dateOfBirth) {
-        this(null, firstName, lastName, dateOfBirth, null, null, null, null, null, null, null, null, null,
-                LocalDateTime.now(), LocalDateTime.now());
+    @Size(max = 50, message = "Department name must not exceed 50 characters")
+    @Column(name = "department")
+    private String department;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * Create a new patient with generated timestamp
-     */
-    public static Patient create(String id, String firstName, String lastName, LocalDate dateOfBirth,
-                                 String ssn, String email, String phone, String address,
-                                 String bloodType, String allergies, String medicalConditions,
-                                 String assignedDoctor, String department) {
-        LocalDateTime now = LocalDateTime.now();
-        return new Patient(id, firstName, lastName, dateOfBirth, ssn, email, phone, address,
-                bloodType, allergies, medicalConditions, assignedDoctor, department, now, now);
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * Update patient with new timestamp
-     */
-    public Patient withUpdatedTimestamp() {
-        return new Patient(id, firstName, lastName, dateOfBirth, ssn, email, phone, address,
-                bloodType, allergies, medicalConditions, assignedDoctor, department,
-                createdAt, LocalDateTime.now());
+    // Getters and Setters
+
+    public UUID getId() {
+        return id;
     }
 
-    /**
-     * Update patient with new ID (for repository save operations)
-     */
-    public Patient withId(String newId) {
-        return new Patient(newId, firstName, lastName, dateOfBirth, ssn, email, phone, address,
-                bloodType, allergies, medicalConditions, assignedDoctor, department,
-                createdAt != null ? createdAt : LocalDateTime.now(),
-                LocalDateTime.now());
+    public void setId(UUID id) {
+        this.id = id;
     }
 
-    /**
-     * Get full name of patient
-     */
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getSsn() {
+        return ssn;
+    }
+
+    public void setSsn(String ssn) {
+        this.ssn = ssn;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getBloodType() {
+        return bloodType;
+    }
+
+    public void setBloodType(String bloodType) {
+        this.bloodType = bloodType;
+    }
+
+    public String getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(String allergies) {
+        this.allergies = allergies;
+    }
+
+    public String getMedicalConditions() {
+        return medicalConditions;
+    }
+
+    public void setMedicalConditions(String medicalConditions) {
+        this.medicalConditions = medicalConditions;
+    }
+
+    public String getAssignedDoctor() {
+        return assignedDoctor;
+    }
+
+    public void setAssignedDoctor(String assignedDoctor) {
+        this.assignedDoctor = assignedDoctor;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    @Transient
     public String getFullName() {
         return firstName + " " + lastName;
-    }
-
-    @Override
-    public String toString() {
-        return "Patient{id='" + id + "', name='" + getFullName() + "', department='" + department + "'}";
     }
 }
