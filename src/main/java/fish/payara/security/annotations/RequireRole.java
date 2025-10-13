@@ -11,8 +11,9 @@ import java.lang.annotation.Target;
 /**
  * Role-based access control annotation.
  * More flexible than standard @RolesAllowed as it works with CDI interceptors.
- *
+ * <p>
  * Example:
+ *
  * @RequireRole({"DOCTOR", "NURSE"})
  * public void accessPatientRecords() { ... }
  */

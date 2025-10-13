@@ -67,9 +67,9 @@ public record Patient(
      * Create a new patient with generated timestamp
      */
     public static Patient create(String id, String firstName, String lastName, LocalDate dateOfBirth,
-                                  String ssn, String email, String phone, String address,
-                                  String bloodType, String allergies, String medicalConditions,
-                                  String assignedDoctor, String department) {
+                                 String ssn, String email, String phone, String address,
+                                 String bloodType, String allergies, String medicalConditions,
+                                 String assignedDoctor, String department) {
         LocalDateTime now = LocalDateTime.now();
         return new Patient(id, firstName, lastName, dateOfBirth, ssn, email, phone, address,
                 bloodType, allergies, medicalConditions, assignedDoctor, department, now, now);

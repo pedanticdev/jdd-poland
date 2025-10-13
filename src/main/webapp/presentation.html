@@ -193,7 +193,8 @@
             </ul>
             <div class="box" style="margin-top: 40px;">
                 <h3>Real-World Impact</h3>
-                <p>A healthcare breach exposed 5M+ patient records because attackers moved laterally after initial access. Traditional "castle-and-moat" security failed.</p>
+                <p>A healthcare breach exposed 5M+ patient records because attackers moved laterally after initial
+                    access. Traditional "castle-and-moat" security failed.</p>
             </div>
         </section>
 
@@ -268,7 +269,8 @@ public class JwtAuthenticationMechanism
     }
 }
             </code></pre>
-            <p><strong>Key Features:</strong> Signature verification, expiration checks, issuer validation, attribute extraction</p>
+            <p><strong>Key Features:</strong> Signature verification, expiration checks, issuer validation, attribute
+                extraction</p>
         </section>
 
         <!-- Slide 6: Authorization -->
@@ -409,7 +411,8 @@ public Response create(
             </table>
             <div class="box" style="margin-top: 30px;">
                 <h3>Immutability with Records</h3>
-                <p><span class="highlight">Records prevent post-validation tampering</span> - Data can't be modified after validation</p>
+                <p><span class="highlight">Records prevent post-validation tampering</span> - Data can't be modified
+                    after validation</p>
             </div>
         </section>
 
@@ -458,10 +461,22 @@ public class AuditInterceptor {
 }
             </code></pre>
             <table>
-                <tr><th>What</th><th>Why</th></tr>
-                <tr><td>Who accessed what data</td><td>Compliance (HIPAA, GDPR)</td></tr>
-                <tr><td>When and from where</td><td>Forensics after incidents</td></tr>
-                <tr><td>Success/failure with duration</td><td>Performance & security analysis</td></tr>
+                <tr>
+                    <th>What</th>
+                    <th>Why</th>
+                </tr>
+                <tr>
+                    <td>Who accessed what data</td>
+                    <td>Compliance (HIPAA, GDPR)</td>
+                </tr>
+                <tr>
+                    <td>When and from where</td>
+                    <td>Forensics after incidents</td>
+                </tr>
+                <tr>
+                    <td>Success/failure with duration</td>
+                    <td>Performance & security analysis</td>
+                </tr>
             </table>
         </section>
 
@@ -470,11 +485,31 @@ public class AuditInterceptor {
             <h2>🏥 Healthcare Demo Application</h2>
             <h3>Role-Based Patient Records Access</h3>
             <table>
-                <tr><th>User</th><th>Role</th><th>Permissions</th></tr>
-                <tr><td>dr.smith</td><td>DOCTOR</td><td>Full CRUD access to patient records</td></tr>
-                <tr><td>nurse.jones</td><td>NURSE</td><td>Read-only access to patients</td></tr>
-                <tr><td>patient.doe</td><td>PATIENT</td><td>Self-access only (own records)</td></tr>
-                <tr><td>admin</td><td>ADMIN</td><td>System operations (delete, stats)</td></tr>
+                <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Permissions</th>
+                </tr>
+                <tr>
+                    <td>dr.smith</td>
+                    <td>DOCTOR</td>
+                    <td>Full CRUD access to patient records</td>
+                </tr>
+                <tr>
+                    <td>nurse.jones</td>
+                    <td>NURSE</td>
+                    <td>Read-only access to patients</td>
+                </tr>
+                <tr>
+                    <td>patient.doe</td>
+                    <td>PATIENT</td>
+                    <td>Self-access only (own records)</td>
+                </tr>
+                <tr>
+                    <td>admin</td>
+                    <td>ADMIN</td>
+                    <td>System operations (delete, stats)</td>
+                </tr>
             </table>
             <div class="box" style="margin-top: 30px;">
                 <h3>🎬 Live Demo Endpoints</h3>
@@ -670,7 +705,7 @@ public class TokenService {
         slideNumber: true,
         transition: 'slide',
         backgroundTransition: 'fade',
-        plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
         width: 1280,
         height: 720,
         margin: 0.1,

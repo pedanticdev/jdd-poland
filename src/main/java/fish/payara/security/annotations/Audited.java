@@ -11,8 +11,9 @@ import java.lang.annotation.Target;
 /**
  * Marks methods that should be audited for security monitoring.
  * Part of the continuous validation strategy in Zero Trust architecture.
- *
+ * <p>
  * Example:
+ *
  * @Audited(action = "VIEW_PATIENT_RECORD")
  * public Patient getPatient(String id) { ... }
  */

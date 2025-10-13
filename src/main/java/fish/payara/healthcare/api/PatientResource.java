@@ -178,7 +178,9 @@ public class PatientResource {
         return Response.ok(new PatientStatistics(count)).build();
     }
 
-    public record PatientStatistics(long totalPatients) {}
+    public record PatientStatistics(long totalPatients) {
+    }
 
-    public record ErrorResponse(String error) {}
+    public record ErrorResponse(String error) {
+    }
 }

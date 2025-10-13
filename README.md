@@ -19,6 +19,7 @@ docker-compose up -d
 ```
 
 This will start:
+
 - **Keycloak** at http://localhost:8180 (admin/admin)
 - **PostgreSQL** database for Keycloak
 
@@ -29,6 +30,7 @@ Wait for Keycloak to be fully started (check with `docker-compose logs -f keyclo
 Access the Keycloak admin console at http://localhost:8180
 
 The realm `jdd-poland` will be automatically imported with:
+
 - **4 pre-configured users** (doctor, nurse, admin, patient)
 - **2 clients** (main app and service client)
 - **4 roles** (DOCTOR, NURSE, ADMIN, PATIENT)
@@ -62,7 +64,9 @@ This application demonstrates Zero Trust security principles:
 
 ### Input Validation
 
-A key principle of Zero Trust is "Never Trust, Always Verify". This applies to all data entering the system. This demo uses Jakarta Bean Validation to enforce strict data validation at the API boundary. For a detailed explanation of the input validation strategy, see [VALIDATION_ZERO_TRUST.md](VALIDATION_ZERO_TRUST.md).
+A key principle of Zero Trust is "Never Trust, Always Verify". This applies to all data entering the system. This demo
+uses Jakarta Bean Validation to enforce strict data validation at the API boundary. For a detailed explanation of the
+input validation strategy, see [VALIDATION_ZERO_TRUST.md](VALIDATION_ZERO_TRUST.md).
 
 ## Docker Commands
 
@@ -83,11 +87,13 @@ docker-compose down -v
 ## Keycloak Configuration
 
 Client credentials for application:
+
 - **Client ID**: `jdd-healthcare-app`
 - **Client Secret**: `jdd-healthcare-secret-2024`
 - **Realm**: `jdd-poland`
 
 Service-to-service client:
+
 - **Client ID**: `service-client`
 - **Client Secret**: `service-client-secret-2024`
 
@@ -102,6 +108,7 @@ cp .env.example .env
 ## Development
 
 The application uses:
+
 - Jakarta EE 11
 - Payara 7.2025.1.Beta1
 - Java 21

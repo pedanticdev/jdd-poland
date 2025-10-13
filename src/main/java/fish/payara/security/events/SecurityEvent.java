@@ -66,12 +66,12 @@ public class SecurityEvent {
     @Override
     public String toString() {
         return "SecurityEvent{" +
-                "id='" + id + '\'' +
-                ", type=" + type +
-                ", username='" + username + '\'' +
-                ", ipAddress='" + ipAddress + '\'' +
-                ", timestamp=" + timestamp +
-                ", metadata=" + metadata +
-                '}';
+               "id='" + id + '\'' +
+               ", type=" + type +
+               ", username='" + username + '\'' +
+               ", ipAddress='" + ipAddress + '\'' +
+               ", timestamp=" + timestamp +
+               ", metadata=" + metadata +
+               '}';
     }
 }

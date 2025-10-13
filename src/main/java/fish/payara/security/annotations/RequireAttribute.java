@@ -11,8 +11,9 @@ import java.lang.annotation.Target;
 /**
  * Attribute-Based Access Control annotation for fine-grained authorization.
  * Requires specific attribute values for access to be granted.
- *
+ * <p>
  * Example:
+ *
  * @RequireAttribute(name = "department", value = "Cardiology")
  * public void viewCardiologyRecords() { ... }
  */

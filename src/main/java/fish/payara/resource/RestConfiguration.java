@@ -8,5 +8,5 @@ import jakarta.ws.rs.core.Application;
  */
 @ApplicationPath("resources")
 public class RestConfiguration extends Application {
-    
+
 }

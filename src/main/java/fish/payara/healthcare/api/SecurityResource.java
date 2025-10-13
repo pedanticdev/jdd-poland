@@ -142,12 +142,14 @@ public class SecurityResource {
             String username,
             @NotBlank(message = "Password is required")
             String password
-    ) {}
+    ) {
+    }
 
     public record RefreshTokenRequest(
             @NotBlank(message = "Refresh token is required")
             String refreshToken
-    ) {}
+    ) {
+    }
 
     public record SecurityEventDTO(
             String id,
@@ -156,7 +158,8 @@ public class SecurityResource {
             String ipAddress,
             String timestamp,
             Map<String, Object> metadata
-    ) {}
+    ) {
+    }
 
     public record SecurityConfig(
             String realm,
@@ -165,14 +168,17 @@ public class SecurityResource {
             String issuer,
             String tokenEndpoint,
             String authorizationEndpoint
-    ) {}
+    ) {
+    }
 
     public record TokenResponseDTO(
             String access_token,
             String token_type,
             int expires_in,
             String refresh_token
-    ) {}
+    ) {
+    }
 
-    public record ErrorResponse(String error) {}
+    public record ErrorResponse(String error) {
+    }
 }

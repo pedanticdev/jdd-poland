@@ -3,10 +3,10 @@ package fish.payara.security.monitoring;
 import fish.payara.security.events.SecurityEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.ObservesAsync;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
-import jakarta.inject.Inject;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 

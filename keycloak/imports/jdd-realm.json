@@ -161,8 +161,12 @@
         "DOCTOR"
       ],
       "attributes": {
-        "department": ["Cardiology"],
-        "license": ["MD-12345"]
+        "department": [
+          "Cardiology"
+        ],
+        "license": [
+          "MD-12345"
+        ]
       }
     },
     {
@@ -182,8 +186,12 @@
         "NURSE"
       ],
       "attributes": {
-        "department": ["Emergency"],
-        "license": ["RN-67890"]
+        "department": [
+          "Emergency"
+        ],
+        "license": [
+          "RN-67890"
+        ]
       }
     },
     {
@@ -220,8 +228,12 @@
         "PATIENT"
       ],
       "attributes": {
-        "patientId": ["P-001"],
-        "dateOfBirth": ["1985-05-15"]
+        "patientId": [
+          "P-001"
+        ],
+        "dateOfBirth": [
+          "1985-05-15"
+        ]
       }
     }
   ],
