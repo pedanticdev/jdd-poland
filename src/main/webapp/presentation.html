@@ -121,9 +121,9 @@
             </div>
             <h3>Technology Stack</h3>
             <ul>
-                <li><span class="highlight">Jakarta EE 11</span> & <span class="highlight">MicroProfile 7</span></li>
-                <li><span class="highlight">Payara 7</span> - Cloud-native application server</li>
-                <li><span class="highlight">Keycloak 26</span> - Identity and access management</li>
+                <li><span class="highlight">Jakarta EE 11</span> & <span class="highlight">MicroProfile 6.1</span></li>
+                <li><span class="highlight">Payara 7.2025.1</span> - Cloud-native application server</li>
+                <li><span class="highlight">Keycloak</span> - Identity and access management</li>
             </ul>
         </section>
 
@@ -158,24 +158,65 @@ public class JwtAuthenticationMechanism implements HttpAuthenticationMechanism {
             <p class="failure">This is complex, error-prone, and requires deep security knowledge.</p>
         </section>
 
-        <!-- NEW Slide 6: Authentication - The Easy Way -->
+        <!-- NEW Slide 6: Authentication - The Standard Way -->
         <section>
-            <h2>🔑 Authentication: The Easy Way</h2>
-            <h3>With MicroProfile JWT</h3>
-            <p>Let the container do the work! Just configure it in `microprofile-config.properties`.</p>
+            <h2>🔑 Authentication: The Standard Way</h2>
+            <h3>Jakarta Security + MicroProfile JWT</h3>
+            <p>Configure JWT validation in `microprofile-config.properties`:</p>
             <pre><code class="properties" data-trim>
-# Point to your Identity Provider's JWKS endpoint and issuer
 mp.jwt.verify.publickey.location=http://localhost:8180/realms/jdd-poland/protocol/openid-connect/certs
 mp.jwt.verify.issuer=http://localhost:8180/realms/jdd-poland
 mp.jwt.verify.audiences=jdd-healthcare-app
             </code></pre>
-            <div class="box" style="margin-top: 30px;">
-                <h3 class="success">That's it! Zero Java code needed.</h3>
-                <p>The container now automatically validates JWTs for you. All the complexity from the previous slide is gone.</p>
+            <p>Implement Jakarta Security's standard authentication mechanism:</p>
+            <pre><code class="java" data-trim>
+@ApplicationScoped
+public class JwtAuthenticationConfig implements HttpAuthenticationMechanism {
+    @Inject private JsonWebToken jwt; // Validated by MP-JWT!
+
+    public AuthenticationStatus validateRequest(...) {
+        if (jwt != null && jwt.getName() != null) {
+            return httpMessageContext.notifyContainerAboutLogin(
+                jwt.getName(), jwt.getGroups()
+            );
+        }
+        return httpMessageContext.doNothing();
+    }
+}
+            </code></pre>
+            <div class="box" style="margin-top: 20px;">
+                <h3 class="success">Standard Jakarta Security + Automatic JWT Validation</h3>
+                <p>MP-JWT validates the token, you just integrate with Jakarta Security's auth flow.</p>
             </div>
         </section>
 
-        <!-- NEW Slide 7: Authorization - The Hard Way -->
+        <!-- NEW Slide 7: IdentityStore Integration -->
+        <section>
+            <h2>🔐 IdentityStore: Bridging OIDC and Jakarta Security</h2>
+            <h3>Standard Jakarta Security Interface</h3>
+            <pre><code class="java" data-trim data-line-numbers="1-4|6-10|12-16">
+@ApplicationScoped
+public class KeycloakIdentityStore implements IdentityStore {
+    @Inject private KeycloakConfig keycloakConfig;
+    @Inject private Event&lt;SecurityEvent&gt; securityEventPublisher;
+
+    public CredentialValidationResult validate(Credential credential) {
+        // 1. Call Keycloak token endpoint with username/password
+        // 2. Extract roles from JWT claims (realm_access, resource_access)
+        // 3. Fire security events for monitoring
+        return new CredentialValidationResult(username, roles);
+    }
+
+    private Set&lt;String&gt; extractRolesFromToken(String accessToken) {
+        // Parse JWT payload, extract roles from claims
+        // Supports realm roles, client roles, and groups
+    }
+}
+            </code></pre>
+            <p>This bridges OAuth2/OIDC authentication with Jakarta Security's standard identity model.</p>
+        </section>
+
+        <!-- NEW Slide 8: Authorization - The Hard Way -->
         <section>
             <h2>🛡️ Authorization: The Hard Way</h2>
             <h3>Custom Annotations and Interceptors</h3>
@@ -208,7 +249,7 @@ public class AuthInterceptor {
             <p class="failure" style="margin-top: 20px;">This works, but you're reinventing a standard feature.</p>
         </section>
 
-        <!-- NEW Slide 8: Authorization - The Easy Way -->
+        <!-- NEW Slide 9: Authorization - The Easy Way -->
         <section>
             <h2>🛡️ Authorization: The Easy Way</h2>
             <h3>With Standard Jakarta EE Annotations</h3>
@@ -238,7 +279,7 @@ public class PatientResource {
             </div>
         </section>
 
-        <!-- NEW Slide 9: Extending the Standard for ABAC -->
+        <!-- NEW Slide 10: Extending the Standard for ABAC -->
         <section>
             <h2>🚀 Extending the Standard for ABAC</h2>
             <h3>What if roles aren't enough?</h3>
@@ -265,7 +306,7 @@ public class AuthorizationInterceptor {
             <p>This is the power of Jakarta Security: <span class="highlight">use the standard where you can, extend where you must.</span></p>
         </section>
 
-        <!-- Slide 10: Input Validation -->
+        <!-- Slide 11: Input Validation -->
         <section>
             <h2>✅ Input Validation: Zero Trust for Data</h2>
             <h3>Never Trust Input, Always Verify</h3>
@@ -290,7 +331,7 @@ public record Patient(
             </code></pre>
         </section>
 
-        <!-- Slide 11: Defense in Depth -->
+        <!-- Slide 12: Defense in Depth -->
         <section>
             <h2>🛡️ Defense in Depth</h2>
             <div class="layers">
@@ -305,7 +346,62 @@ public record Patient(
             <p>We use standard Jakarta EE features for layers 2, 3, and 4.</p>
         </section>
 
-        <!-- Slide 12: Continuous Validation -->
+        <!-- Slide 13: Multi-Factor Authentication -->
+        <section>
+            <h2>🔐 Multi-Factor Authentication (MFA)</h2>
+            <h3>Adding Another Layer of Zero Trust Verification</h3>
+            <pre><code class="java" data-trim data-line-numbers="1-7|9-15">
+@ApplicationScoped
+public class MfaService {
+    public String generateOtp(String username, String ipAddress) {
+        String otp = generateRandomOtp(); // 6-digit OTP
+        storeOtp(username, otp, 5_MINUTES);
+        return otp; // Send via SMS/Email/Authenticator
+    }
+
+    public boolean validateOtp(String username, String otp, String ipAddress) {
+        OtpData stored = otpStorage.get(username);
+        if (stored != null && !stored.used() && !isExpired(stored)) {
+            return stored.otp().equals(otp);
+        }
+        return false;
+    }
+}
+            </code></pre>
+            <div class="box" style="margin-top: 20px;">
+                <h3>Zero Trust Principle: Verify Explicitly</h3>
+                <p>MFA adds context-aware verification beyond passwords. Even with valid credentials, additional proof is required.</p>
+            </div>
+        </section>
+
+        <!-- Slide 14: Encrypted Data Transit -->
+        <section>
+            <h2>🔒 Encrypted Data Transit</h2>
+            <h3>Custom Security Annotations for TLS Enforcement</h3>
+            <pre><code class="java" data-trim data-line-numbers="1-6|8-15">
+@InterceptorBinding
+@Retention(RUNTIME)
+@Target({METHOD, TYPE})
+public @interface Encrypted {
+    Algorithm algorithm() default Algorithm.AES_256_GCM;
+    boolean requireTls() default true;
+}
+
+@GET @Path("/{id}")
+@RolesAllowed({"DOCTOR", "NURSE"})
+@Audited(action = "VIEW_PATIENT", level = CRITICAL)
+@Encrypted(algorithm = AES_256_GCM) // Enforce TLS!
+public Response getPatient(@PathParam("id") String id) {
+    // Access to sensitive patient data
+}
+            </code></pre>
+            <div class="box" style="margin-top: 20px;">
+                <h3>Zero Trust Principle: Never Trust the Network</h3>
+                <p>The <code>@Encrypted</code> interceptor validates HTTPS/TLS for all sensitive operations. Plain HTTP requests are rejected with 403 Forbidden.</p>
+            </div>
+        </section>
+
+        <!-- Slide 15: Continuous Validation -->
         <section>
             <h2>📊 Continuous Validation & Monitoring</h2>
             <h3>CDI Events for Security Observability</h3>
@@ -332,7 +428,95 @@ public class SecurityMonitor {
             </ul>
         </section>
 
-        <!-- Slide 13: Healthcare Demo -->
+        <!-- Slide 16: Session Management & Rate Limiting -->
+        <section>
+            <h2>🛡️ Session Management & Rate Limiting</h2>
+            <h3>Additional Zero Trust Controls</h3>
+            <div class="two-column">
+                <div class="box">
+                    <h3>Session Management</h3>
+                    <pre><code class="java" data-trim>
+@ApplicationScoped
+public class SessionManager {
+    public UserSession createSession(
+        String username,
+        String ipAddress
+    ) {
+        // Track active sessions
+        // Configurable timeout
+        // Publish SESSION_CREATED event
+    }
+
+    public void expireSession(String sessionId) {
+        // Clean up on logout/timeout
+        // Publish SESSION_EXPIRED event
+    }
+}
+                    </code></pre>
+                    <p style="font-size: 0.75em;">Sessions enforce timeouts and track user activity for anomaly detection.</p>
+                </div>
+                <div class="box">
+                    <h3>Rate Limiting</h3>
+                    <pre><code class="java" data-trim>
+@ApplicationScoped
+public class RateLimiter {
+    public boolean isAllowed(
+        String key,
+        int maxAttempts,
+        int windowSeconds
+    ) {
+        // Sliding window check
+        // 5 attempts/min per IP
+        // 10 attempts/5min per user
+        // Fire SUSPICIOUS_ACTIVITY
+    }
+}
+                    </code></pre>
+                    <p style="font-size: 0.75em;">Prevents brute force attacks on authentication endpoints.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 17: Performance Metrics -->
+        <section>
+            <h2>⚡ Performance Metrics</h2>
+            <h3>Maintaining Performance While Enforcing Security</h3>
+            <div class="two-column">
+                <div class="box">
+                    <h3>Security Metrics</h3>
+                    <pre><code class="java" data-trim>
+@GET @Path("/metrics/security")
+@RolesAllowed({"ADMIN", "DOCTOR", "NURSE"})
+public Response getSecurityMetrics() {
+    return Response.ok(Map.of(
+        "authSuccess", authSuccessCounter.getCount(),
+        "authFailure", authFailureCounter.getCount(),
+        "authzFailure", authzFailureCounter.getCount(),
+        "suspiciousActivity", suspiciousCounter.getCount()
+    )).build();
+}
+                    </code></pre>
+                </div>
+                <div class="box">
+                    <h3>System Performance</h3>
+                    <pre><code class="java" data-trim>
+@GET @Path("/metrics/performance")
+@RolesAllowed("ADMIN")
+public Response getPerformanceMetrics() {
+    return Response.ok(Map.of(
+        "uptime", runtimeBean.getUptime(),
+        "heapUsagePct", heapUsed/heapMax*100,
+        "cpuCores", osBean.getAvailableProcessors(),
+        "systemLoad", osBean.getSystemLoadAverage()
+    )).build();
+}
+                    </code></pre>
+                </div>
+            </div>
+            <p style="margin-top: 20px;">Zero Trust doesn't mean slow. Monitor performance to ensure security measures don't impact user experience.</p>
+        </section>
+
+        <!-- Slide 17: Healthcare Demo -->
         <section>
             <h2>🏥 Healthcare Demo Application</h2>
             <h3>Role & Attribute-Based Patient Access</h3>
@@ -345,14 +529,19 @@ public class SecurityMonitor {
             <div class="box" style="margin-top: 30px;">
                 <h3>🎬 Live Demo Endpoints</h3>
                 <div class="demo-output">
-                    <div>GET /api/patients/department/Cardiology - (Dr. Smith: OK, Nurse Jones: 403)</div>
-                    <div>POST /api/patients - (Dr. Smith: OK, Nurse Jones: 403)</div>
-                    <div>GET /api/security/events - View security audit trail</div>
+                    <div>POST /api/security/token - Authenticate (rate limited)</div>
+                    <div>POST /api/security/logout - Revoke token and end session</div>
+                    <div>GET /api/patients/department/Cardiology - Department-scoped access</div>
+                    <div>POST /api/patients - Create patient (DOCTOR only)</div>
+                    <div>GET /api/security/events - Security audit trail (ADMIN)</div>
+                    <div>GET /api/metrics/security - Real-time security metrics</div>
+                    <div>POST /api/mfa/generate - Generate MFA OTP</div>
+                    <div>POST /api/mfa/validate - Validate MFA OTP</div>
                 </div>
             </div>
         </section>
 
-        <!-- Slide 14: Demo Results -->
+        <!-- Slide 18: Demo Results -->
         <section>
             <h2>✅ Demo Results: Zero Trust in Action</h2>
             <div class="two-column">
@@ -363,6 +552,9 @@ public class SecurityMonitor {
                         <li>Nurse reads records in own dept → <strong>200 OK</strong></li>
                         <li>Doctor creates patient → <strong>201 Created</strong></li>
                         <li>Admin views stats → <strong>200 OK</strong></li>
+                        <li>MFA OTP generation → <strong>200 OK</strong></li>
+                        <li>Valid OTP validation → <strong>200 OK</strong></li>
+                        <li>HTTPS access to patient data → <strong>200 OK</strong></li>
                     </ul>
                 </div>
                 <div class="box">
@@ -372,12 +564,14 @@ public class SecurityMonitor {
                         <li>Doctor views patient in other dept → <strong>403 Forbidden</strong></li>
                         <li>No token provided → <strong>401 Unauthorized</strong></li>
                         <li>Invalid SSN format → <strong>400 Bad Request</strong></li>
+                        <li>HTTP access to encrypted endpoint → <strong>403 Forbidden</strong></li>
+                        <li>Invalid or expired OTP → <strong>401 Unauthorized</strong></li>
                     </ul>
                 </div>
             </div>
         </section>
 
-        <!-- Slide 15: Service-to-Service -->
+        <!-- Slide 19: Service-to-Service -->
         <section>
             <h2>🔗 Service-to-Service Security</h2>
             <h3>Least Privilege with Client Credentials</h3>
@@ -388,59 +582,125 @@ public class TokenService {
         // OAuth 2.0 Client Credentials Grant
         // Short-lived tokens (5-10 minutes)
     }
+
+    public TokenResponse refreshToken(String refreshToken) {
+        // Refresh expired tokens without re-authentication
+    }
+
+    public boolean validateToken(String accessToken) {
+        // Validate token via userinfo endpoint
+    }
 }
             </code></pre>
             <ul>
-                <li>Services authenticate with their own credentials.</li>
-                <li>Not covered by Jakarta Security, this is OAuth2 client logic.</li>
+                <li>Services authenticate with their own credentials</li>
+                <li>Token refresh for continuous operations</li>
+                <li>Validation ensures tokens haven't been revoked</li>
             </ul>
         </section>
 
-        <!-- NEW Slide 16: Implementation Checklist -->
+        <!-- Slide 20: Implementation Checklist -->
         <section>
             <h2>✅ Implementation Checklist</h2>
-            <h3>Custom vs. Standard Jakarta EE</h3>
+            <h3>What We Built</h3>
             <div class="two-column">
                 <div class="box">
-                    <h3 class="failure">The Hard Way (Manual)</h3>
+                    <h3 class="success">Standard Jakarta Security</h3>
                     <ul>
-                        <li>Implement `HttpAuthenticationMechanism`</li>
-                        <li>Manually parse/validate JWT</li>
-                        <li>Create custom `@RequireRole` annotation</li>
-                        <li>Build interceptor for role checks</li>
+                        <li>✓ `HttpAuthenticationMechanism` implementation</li>
+                        <li>✓ MicroProfile JWT for token validation</li>
+                        <li>✓ `IdentityStore` for Keycloak integration</li>
+                        <li>✓ Standard `@RolesAllowed` for RBAC</li>
+                        <li>✓ Bean Validation for input verification</li>
+                        <li>✓ MicroProfile Metrics for monitoring</li>
                     </ul>
                 </div>
                 <div class="box">
-                    <h3 class="success">The Easy Way (Standard)</h3>
+                    <h3 class="highlight">Custom Extensions</h3>
                     <ul>
-                        <li>Configure MP-JWT in `properties` file</li>
-                        <li>Use standard `@RolesAllowed`</li>
-                        <li><span class="highlight">Extend</span> with interceptor for ABAC</li>
-                        <li>Inject `JsonWebToken` to get claims</li>
+                        <li>✓ `@RequireAttribute` for ABAC</li>
+                        <li>✓ `@Audited` with persistent audit logs</li>
+                        <li>✓ `@Encrypted` for TLS enforcement</li>
+                        <li>✓ MFA with TOTP implementation</li>
+                        <li>✓ Session management with timeouts</li>
+                        <li>✓ Rate limiting for brute force protection</li>
+                        <li>✓ Token revocation with blacklist</li>
+                        <li>✓ CDI events for security monitoring</li>
                     </ul>
                 </div>
             </div>
+            <p style="margin-top: 20px;"><span class="highlight">Best Practice:</span> Use standards where they exist, extend only where needed.</p>
         </section>
 
-        <!-- Slide 17: Key Takeaways -->
+        <!-- Slide 21: Production Considerations -->
+        <section>
+            <h2>⚠️ From Demo to Production</h2>
+            <h3>What This Demo Includes vs What Production Needs</h3>
+            <div class="two-column">
+                <div class="box">
+                    <h3 class="success">✓ Demo Implements</h3>
+                    <ul style="font-size: 0.75em;">
+                        <li>✓ Rate limiting (5/min per IP, 10/5min per user)</li>
+                        <li>✓ Token revocation with cleanup scheduler</li>
+                        <li>✓ Session management with timeout enforcement</li>
+                        <li>✓ Persistent audit logs (database-backed)</li>
+                        <li>✓ MFA with OTP generation/validation</li>
+                        <li>✓ Security event monitoring with metrics</li>
+                        <li>✓ TLS/HTTPS enforcement via interceptors</li>
+                    </ul>
+                    <h3 class="failure" style="margin-top: 20px;">✗ Demo Simplifies</h3>
+                    <ul style="font-size: 0.75em;">
+                        <li>In-memory storage (vs Redis/distributed cache)</li>
+                        <li>OTP returned in response (demo mode)</li>
+                        <li>Basic anomaly detection (vs ML-based)</li>
+                        <li>Config file secrets (vs vault integration)</li>
+                    </ul>
+                </div>
+                <div class="box">
+                    <h3 class="highlight">Production Hardening Needed</h3>
+                    <ul style="font-size: 0.75em;">
+                        <li><strong>Distributed state:</strong> Redis for rate limits, sessions, revocation across instances</li>
+                        <li><strong>Secret management:</strong> HashiCorp Vault or AWS Secrets Manager</li>
+                        <li><strong>MFA delivery:</strong> SMS/Email/TOTP apps (not API response)</li>
+                        <li><strong>Advanced monitoring:</strong> ML-based anomaly detection, SIEM integration</li>
+                        <li><strong>Compliance:</strong> GDPR/HIPAA audit retention, data masking</li>
+                        <li><strong>High availability:</strong> Database replication, cache clustering</li>
+                        <li><strong>DDoS protection:</strong> Web application firewall (WAF)</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="margin-top: 20px;"><span class="highlight">Key Point:</span> Demo shows <strong>production-grade patterns</strong> with simplified infrastructure. Scale and harden for your environment.</p>
+        </section>
+
+        <!-- Slide 22: Key Takeaways -->
         <section>
             <h2>🎓 Key Takeaways</h2>
-            <ol style="font-size: 0.9em;">
-                <li><strong>Zero Trust is not optional</strong> - Modern threats require continuous verification.</li>
-                <li><strong>Jakarta EE & MP provide the tools</strong> - Don't reinvent the wheel!</li>
-                <li><strong>Use the standard, extend for the custom</strong> - A powerful and maintainable pattern.</li>
-                <li><strong>Configuration over code</strong> - For standard security, prefer properties to custom Java code.</li>
-                <li><strong>Fine-grained authorization is key</strong> - Roles alone are often insufficient for Zero Trust.</li>
+            <ol style="font-size: 0.85em;">
+                <li><strong>Zero Trust is not optional</strong> - Modern threats require continuous verification</li>
+                <li><strong>Jakarta Security provides standard interfaces</strong> - `HttpAuthenticationMechanism`, `IdentityStore`, `@RolesAllowed`</li>
+                <li><strong>MicroProfile JWT handles token validation</strong> - Configure once, inject everywhere</li>
+                <li><strong>Use standards first, extend where needed</strong> - RBAC is standard, ABAC/MFA/Encryption are extensions</li>
+                <li><strong>MFA adds verification layers</strong> - Context-aware security beyond passwords</li>
+                <li><strong>Encrypted transit is enforced</strong> - Custom annotations validate TLS/HTTPS</li>
+                <li><strong>Performance monitoring matters</strong> - Security shouldn't sacrifice user experience</li>
+                <li><strong>Defense in depth with CDI</strong> - Events, interceptors, and metrics for continuous monitoring</li>
             </ol>
         </section>
 
-        <!-- Slide 18: Resources -->
+        <!-- Slide 23: Resources -->
         <section>
             <h2>📚 Resources</h2>
             <div class="box">
-                <h3>Demo Application</h3>
-                <p><strong>GitHub:</strong> [Your Repository URL]</p>
-                <p>Includes `custom-impl` and `standard-impl` branches.</p>
+                <h3>Demo Application Features</h3>
+                <ul style="font-size: 0.85em; text-align: left;">
+                    <li>✓ OAuth 2.0/OIDC with Keycloak integration</li>
+                    <li>✓ Role-based & attribute-based access control</li>
+                    <li>✓ Multi-factor authentication (TOTP)</li>
+                    <li>✓ TLS/HTTPS enforcement with `@Encrypted`</li>
+                    <li>✓ Real-time security & performance metrics</li>
+                    <li>✓ Continuous monitoring with CDI events</li>
+                    <li>✓ Modern, responsive UI dashboard</li>
+                </ul>
             </div>
             <h3 style="margin-top: 30px;">Learn More</h3>
             <ul style="font-size: 0.9em;">
@@ -450,7 +710,7 @@ public class TokenService {
             </ul>
         </section>
 
-        <!-- Slide 19: Thank You -->
+        <!-- Slide 24: Thank You -->
         <section>
             <img src="images/payara-fish-logo.svg" class="payara-logo" alt="Payara">
             <h1>Thank You!</h1>

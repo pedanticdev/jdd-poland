@@ -45,24 +45,22 @@ The application will start at http://localhost:8080/
 
 ## Testing the API
 
-Once the application is running, you can run the test script to see the security rules in action.
+The `test-api.sh` script is included to demonstrate how the API endpoints can be tested.
 
-```bash
-./test-api.sh
-```
-
-This script uses the pre-configured users to test various endpoints and demonstrates the RBAC and ABAC rules.
+**Note:** Due to the secure user setup (forcing a password change on first login), this script is not fully automated. It is provided as a reference for the API calls that can be made.
 
 ## Pre-configured Test Users
 
-**Note:** The passwords listed below are temporary. Upon first login via the Keycloak UI, you will be required to set a new password.
+The realm is created with the following users. The passwords listed are for the **first login only**. Upon the first login attempt for any of these users, you will be prompted by Keycloak to create a new, permanent password.
 
-| Username    | Password   | Role    | Department | Description                                                   |
-|-------------|------------|---------|------------|---------------------------------------------------------------|
-| dr.smith    | doctor123  | DOCTOR  | Cardiology | Can read/write patient records in the Cardiology dept.        |
-| nurse.jones | nurse123   | NURSE   | Emergency  | Can read patient records in the Emergency dept.               |
-| admin       | admin123   | ADMIN   | (N/A)      | Can perform system-wide operations (e.g., list all patients). |
-| patient.doe | patient123 | PATIENT | (N/A)      | Has no access to the patient API.                             |
+This is a security best practice enforced by a realm-level "Required Action" in Keycloak. While the initial passwords are in the realm configuration file for demo convenience, they are immediately invalidated after first use.
+
+| Username    | Initial Password | Role    | Department | Description                                                   |
+|-------------|------------------|---------|------------|---------------------------------------------------------------|
+| dr.smith    | doctor123        | DOCTOR  | Cardiology | Can read/write patient records in the Cardiology dept.        |
+| nurse.jones | nurse123         | NURSE   | Emergency  | Can read patient records in the Emergency dept.               |
+| admin       | admin123         | ADMIN   | (N/A)      | Can perform system-wide operations (e.g., list all patients). |
+| patient.doe | patient123       | PATIENT | (N/A)      | Has no access to the patient API.                             |
 
 ## Architecture
 

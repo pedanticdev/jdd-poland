@@ -1,6 +1,8 @@
 package fish.payara.security.interceptors;
 
 import fish.payara.security.annotations.Audited;
+import fish.payara.security.audit.AuditLogEntry;
+import fish.payara.security.audit.AuditLogRepository;
 import fish.payara.security.events.SecurityEvent;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Event;
@@ -10,6 +12,7 @@ import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import jakarta.security.enterprise.SecurityContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -38,7 +41,11 @@ public class AuditInterceptor {
     @Inject
     private HttpServletRequest request;
 
+    @Inject
+    private AuditLogRepository auditLogRepository;
+
     @AroundInvoke
+    @Transactional
     public Object auditMethodCall(InvocationContext context) throws Exception {
         Method method = context.getMethod();
         Audited auditAnnotation = method.getAnnotation(Audited.class);
@@ -95,10 +102,69 @@ public class AuditInterceptor {
                     metadata
             ));
 
+            // Persist audit log to database
+            persistAuditLog(
+                    username,
+                    ipAddress,
+                    action,
+                    method,
+                    auditAnnotation.level(),
+                    exception == null,
+                    duration,
+                    exception,
+                    result
+            );
+
             LOGGER.info(String.format(
                     "AUDIT: User=%s, Action=%s, Success=%b, Duration=%dms, IP=%s",
                     username, action, exception == null, duration, ipAddress
             ));
+        }
+    }
+
+    /**
+     * Persist audit log entry to database for compliance and forensic analysis.
+     */
+    private void persistAuditLog(
+            String username,
+            String ipAddress,
+            String action,
+            Method method,
+            Audited.SensitivityLevel level,
+            boolean success,
+            long duration,
+            Exception exception,
+            Object result
+    ) {
+        try {
+            AuditLogEntry entry = new AuditLogEntry();
+            entry.setUsername(username);
+            entry.setIpAddress(ipAddress);
+            entry.setAction(action);
+            entry.setMethodName(method.getName());
+            entry.setClassName(method.getDeclaringClass().getName());
+            entry.setSensitivityLevel(level);
+            entry.setSuccess(success);
+            entry.setDurationMs(duration);
+
+            if (exception != null) {
+                entry.setErrorMessage(exception.getMessage());
+            }
+
+            if (result != null) {
+                entry.setDetails("Result type: " + result.getClass().getSimpleName());
+            }
+
+            if (request != null) {
+                entry.setUserAgent(request.getHeader("User-Agent"));
+            }
+
+            auditLogRepository.save(entry);
+
+            LOGGER.fine("Audit log persisted: " + entry.getId());
+        } catch (Exception e) {
+            // Don't let audit logging failures break the application
+            LOGGER.severe("Failed to persist audit log: " + e.getMessage());
         }
     }
 }

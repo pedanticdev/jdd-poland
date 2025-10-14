@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Entity
@@ -45,7 +46,7 @@ public class Patient {
     @Column(name = "address")
     private String address;
 
-    @Pattern(regexp = "A\\+\|A-\|B\\+\|B-\|AB\\+\|AB-\|O\\+\|O-", message = "Invalid blood type")
+    @Pattern(regexp = "(A|B|AB|O)[+-]", message = "Invalid blood type")
     @Column(name = "blood_type")
     private String bloodType;
 
@@ -73,12 +74,12 @@ public class Patient {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = updatedAt = LocalDateTime.now();
+        createdAt = updatedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     // Getters and Setters

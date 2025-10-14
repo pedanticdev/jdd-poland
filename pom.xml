@@ -14,6 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
         <jakartaee-api.version>11.0.0</jakartaee-api.version>
+        <microprofile>6.1</microprofile>
         <payara.version>7.2025.1.Beta1</payara.version>
     </properties>
 
@@ -33,13 +34,15 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-web-api</artifactId>
+            <version>${jakartaee-api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile</groupId>
             <artifactId>microprofile</artifactId>
-            <scope>provided</scope>
+            <version>6.1</version>
             <type>pom</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.api</groupId>
@@ -47,20 +50,20 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JWT and Security -->
-        <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.41.1</version>
-        </dependency>
+<!--        &lt;!&ndash; JWT and Security &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.nimbusds</groupId>-->
+<!--            <artifactId>nimbus-jose-jwt</artifactId>-->
+<!--            <version>9.41.1</version>-->
+<!--        </dependency>-->
 
-        <!-- JSON Processing -->
-        <dependency>
-            <groupId>org.eclipse.parsson</groupId>
-            <artifactId>parsson</artifactId>
-            <version>1.1.7</version>
-            <scope>provided</scope>
-        </dependency>
+<!--        &lt;!&ndash; JSON Processing &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.parsson</groupId>-->
+<!--            <artifactId>parsson</artifactId>-->
+<!--            <version>1.1.7</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
         <!-- Database -->
         <dependency>
@@ -79,6 +82,7 @@
     </dependencies>
 
     <build>
+        <finalName>jdd-poland</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -22,4 +22,12 @@ public interface PatientRepository extends CrudRepository<Patient, UUID> {
      * @return A list of patients in the specified department.
      */
     List<Patient> findByDepartment(String department);
+
+    /**
+     * Returns the number of patients.
+     * The implementation of this method is automatically provided by Jakarta Data.
+     *
+     * @return the number of patients.
+     */
+    long count();
 }

@@ -1,6 +1,8 @@
 package fish.payara.security.token;
 
 import fish.payara.security.config.KeycloakConfig;
+import fish.payara.security.session.SessionManager;
+import fish.payara.security.session.UserSession;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
@@ -31,6 +33,9 @@ public class TokenService {
 
     @Inject
     private KeycloakConfig keycloakConfig;
+
+    @Inject
+    private SessionManager sessionManager;
 
     /**
      * Obtain access token using client credentials grant (service-to-service).
@@ -65,11 +70,12 @@ public class TokenService {
 
     /**
      * Obtain access token using password grant (for testing).
+     * Creates a session for the authenticated user.
      */
-    public TokenResponse getUserToken(String username, String password) {
+    public TokenResponse getUserToken(String username, String password, String ipAddress) {
         try {
             String requestBody = String.format(
-                    "grant_type=password&client_id=%s&client_secret=%s&username=%s&password=%s",
+                    "grant_type=password&client_id=%s&client_secret=%s&username=%s&password=%s&scope=openid microprofile-jwt",
                     URLEncoder.encode(keycloakConfig.getClientId(), StandardCharsets.UTF_8),
                     URLEncoder.encode(keycloakConfig.getClientSecret(), StandardCharsets.UTF_8),
                     URLEncoder.encode(username, StandardCharsets.UTF_8),
@@ -85,7 +91,22 @@ public class TokenService {
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                return parseTokenResponse(response.body());
+                TokenResponse tokenResponse = parseTokenResponse(response.body());
+
+                // Create session for the authenticated user
+                UserSession session = sessionManager.createSession(
+                        username,
+                        ipAddress,
+                        java.util.Map.of(
+                                "tokenType", "password_grant",
+                                "expiresIn", tokenResponse.expiresIn()
+                        )
+                );
+
+                LOGGER.info(String.format("Token obtained and session created for user '%s'. Session ID: %s",
+                        username, session.sessionId()));
+
+                return tokenResponse;
             } else {
                 LOGGER.warning("Failed to obtain user token for " + username + ": " + response.statusCode());
                 return null;

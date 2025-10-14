@@ -79,7 +79,7 @@
             "userinfo.token.claim": "true",
             "id.token.claim": "true",
             "access.token.claim": "true",
-            "claim.name": "roles",
+            "claim.name": "groups",
             "jsonType.label": "String"
           }
         },
@@ -108,6 +108,46 @@
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "department",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "audience-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "jdd-healthcare-app",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        },
+        {
+          "name": "subject-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "sub",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "upn-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "upn",
             "jsonType.label": "String"
           }
         }
@@ -153,7 +193,7 @@
       "credentials": [
         {
           "type": "password",
-"temporary": true
+          "value": "doctor123"
         }
       ],
       "realmRoles": [
@@ -177,7 +217,8 @@
       "credentials": [
         {
           "type": "password",
-          "temporary": true        }
+          "value": "nurse123"
+        }
       ],
       "realmRoles": [
         "NURSE"
@@ -200,7 +241,7 @@
       "credentials": [
         {
           "type": "password",
-"temporary": true
+          "value": "admin123"
         }
       ],
       "realmRoles": [
@@ -216,8 +257,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "patient123",
-          "temporary": true
+          "value": "patient123"
         }
       ],
       "realmRoles": [
@@ -247,7 +287,7 @@
       "name": "Update Password",
       "providerId": "UPDATE_PASSWORD",
       "enabled": true,
-      "defaultAction": false,
+      "defaultAction": true,
       "priority": 30
     }
   ],
