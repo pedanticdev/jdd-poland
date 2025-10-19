@@ -246,10 +246,21 @@ body {
     margin-bottom: 0.25rem;
 }
 
-.role-badge.doctor { background-color: #0d6efd; }
-.role-badge.nurse { background-color: #198754; }
-.role-badge.admin { background-color: #6f42c1; }
-.role-badge.patient { background-color: #fd7e14; }
+.role-badge.doctor {
+    background-color: #0d6efd;
+}
+
+.role-badge.nurse {
+    background-color: #198754;
+}
+
+.role-badge.admin {
+    background-color: #6f42c1;
+}
+
+.role-badge.patient {
+    background-color: #fd7e14;
+}
 
 /* Dashboard */
 .stats-grid {
@@ -280,15 +291,18 @@ body {
     font-size: 2.5rem;
     line-height: 1;
 }
+
 .stat-content {
     flex: 1;
 }
+
 .stat-value {
     font-size: 2rem;
     font-weight: 700;
     line-height: 1.2;
     margin-bottom: 0.25rem;
 }
+
 .stat-label {
     color: var(--text-muted-color);
     font-size: 0.875rem;
@@ -326,8 +340,13 @@ body {
     border-bottom-color: var(--primary-color);
 }
 
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
 
 .content-header {
     display: flex;
@@ -336,7 +355,9 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.content-header h2 { margin: 0; }
+.content-header h2 {
+    margin: 0;
+}
 
 .patients-grid {
     display: grid;
@@ -451,7 +472,7 @@ body {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
@@ -472,8 +493,16 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.modal-header h3 { margin: 0; }
-.modal-close { font-size: 1.5rem; background: none; border: none; cursor: pointer; }
+.modal-header h3 {
+    margin: 0;
+}
+
+.modal-close {
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
 
 .form-row {
     display: grid;
@@ -503,15 +532,25 @@ body {
     background-color: #fff;
     padding: 1rem 1.5rem;
     border-radius: 0.25rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     margin-bottom: 1rem;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
-.toast.show { opacity: 1; }
-.toast.success { background-color: var(--success-color); color: #fff; }
-.toast.error { background-color: var(--error-color); color: #fff; }
+.toast.show {
+    opacity: 1;
+}
+
+.toast.success {
+    background-color: var(--success-color);
+    color: #fff;
+}
+
+.toast.error {
+    background-color: var(--error-color);
+    color: #fff;
+}
 
 /* Metrics Section */
 .metrics-section {

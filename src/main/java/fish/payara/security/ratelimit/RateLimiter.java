@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 /**
  * Rate limiter for Zero Trust security.
  * Prevents brute force attacks by limiting authentication attempts per IP/user.
- *
+ * <p>
  * PRODUCTION NOTE: In production, use Redis for distributed rate limiting
  * across multiple application instances.
  */

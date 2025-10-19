@@ -5,14 +5,14 @@ import fish.payara.security.events.SecurityEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
-import jakarta.security.enterprise.credential.Credential;
-import jakarta.security.enterprise.credential.UsernamePasswordCredential;
-import jakarta.security.enterprise.identitystore.CredentialValidationResult;
-import jakarta.security.enterprise.identitystore.IdentityStore;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.security.enterprise.credential.Credential;
+import jakarta.security.enterprise.credential.UsernamePasswordCredential;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 
 import java.io.StringReader;
 import java.net.URI;
@@ -22,7 +22,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**

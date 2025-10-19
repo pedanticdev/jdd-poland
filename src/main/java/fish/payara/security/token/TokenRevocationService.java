@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 /**
  * Token revocation service for Zero Trust security.
  * Maintains a blacklist of revoked tokens to prevent their reuse.
- *
+ * <p>
  * PRODUCTION NOTE: In production, this should use Redis or a distributed cache
  * to ensure revocation is consistent across multiple instances.
  */

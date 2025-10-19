@@ -26,19 +26,6 @@ public class SecurityEvent {
         this.metadata = metadata;
     }
 
-    public enum Type {
-        AUTHENTICATION_SUCCESS,
-        AUTHENTICATION_FAILURE,
-        AUTHORIZATION_SUCCESS,
-        AUTHORIZATION_FAILURE,
-        SESSION_CREATED,
-        SESSION_EXPIRED,
-        TOKEN_REFRESH,
-        SUSPICIOUS_ACTIVITY,
-        DATA_ACCESS,
-        CONFIGURATION_CHANGE
-    }
-
     public String getId() {
         return id;
     }
@@ -73,5 +60,18 @@ public class SecurityEvent {
                ", timestamp=" + timestamp +
                ", metadata=" + metadata +
                '}';
+    }
+
+    public enum Type {
+        AUTHENTICATION_SUCCESS,
+        AUTHENTICATION_FAILURE,
+        AUTHORIZATION_SUCCESS,
+        AUTHORIZATION_FAILURE,
+        SESSION_CREATED,
+        SESSION_EXPIRED,
+        TOKEN_REFRESH,
+        SUSPICIOUS_ACTIVITY,
+        DATA_ACCESS,
+        CONFIGURATION_CHANGE
     }
 }

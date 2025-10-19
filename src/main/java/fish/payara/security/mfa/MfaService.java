@@ -24,12 +24,10 @@ public class MfaService {
     private static final int OTP_LENGTH = 6;
     private static final int OTP_VALIDITY_MINUTES = 5;
     private static final SecureRandom RANDOM = new SecureRandom();
-
-    @Inject
-    private Event<SecurityEvent> securityEventPublisher;
-
     // In-memory storage for demo purposes. In production, use database.
     private final Map<String, OtpData> otpStorage = new ConcurrentHashMap<>();
+    @Inject
+    private Event<SecurityEvent> securityEventPublisher;
 
     /**
      * Generate a one-time password for MFA.

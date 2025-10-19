@@ -2,6 +2,7 @@ package fish.payara.healthcare.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -203,7 +204,7 @@ public class Patient {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
+
     @Transient
     public String getFullName() {
         return firstName + " " + lastName;

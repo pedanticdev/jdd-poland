@@ -2,286 +2,289 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Zero Trust Healthcare Platform</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link href="css/styles.css" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <div class="logo-section">
-                    <img src="images/payara-fish-logo.svg" alt="Payara Logo" class="logo">
-                    <div class="app-title">
-                        <h1>Zero Trust Healthcare</h1>
-                        <p class="subtitle">Powered by Jakarta EE 11 & Payara</p>
-                    </div>
-                </div>
-                <div class="user-section" id="userSection" style="display: none;">
-                    <span class="user-info" id="userInfo"></span>
-                    <button class="btn btn-secondary btn-small" id="logoutBtn">Logout</button>
+<div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img alt="Payara Logo" class="logo" src="images/payara-fish-logo.svg">
+                <div class="app-title">
+                    <h1>Zero Trust Healthcare</h1>
+                    <p class="subtitle">Powered by Jakarta EE 11 & Payara</p>
                 </div>
             </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Login Section -->
-            <section id="loginSection" class="login-section">
-                <div class="login-container">
-                    <div class="login-card">
-                        <h2>Welcome Back</h2>
-                        <p class="login-subtitle">Sign in to access the healthcare platform</p>
-
-                        <form id="loginForm" class="login-form">
-                            <div class="form-group">
-                                <label for="username">Username</label>
-                                <input type="text" id="username" name="username" required
-                                       placeholder="Enter your username" autocomplete="username">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="password">Password</label>
-                                <input type="password" id="password" name="password" required
-                                       placeholder="Enter your password" autocomplete="current-password">
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary btn-full">Sign In</button>
-                            </div>
-
-                            <div id="loginError" class="error-message" style="display: none;"></div>
-                        </form>
-
-                        <div class="test-users">
-                            <p class="test-users-title">Test Users:</p>
-                            <div class="test-user-grid">
-                                <button class="test-user-btn" data-username="dr.smith" data-password="doctor123">
-                                    <span class="role-badge doctor">Doctor</span>
-                                    <span>dr.smith</span>
-                                </button>
-                                <button class="test-user-btn" data-username="nurse.jones" data-password="nurse123">
-                                    <span class="role-badge nurse">Nurse</span>
-                                    <span>nurse.jones</span>
-                                </button>
-                                <button class="test-user-btn" data-username="admin" data-password="admin123">
-                                    <span class="role-badge admin">Admin</span>
-                                    <span>admin</span>
-                                </button>
-                                <button class="test-user-btn" data-username="patient.doe" data-password="patient123">
-                                    <span class="role-badge patient">Patient</span>
-                                    <span>patient.doe</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Dashboard Section -->
-            <section id="dashboardSection" class="dashboard-section" style="display: none;">
-                <!-- Quick Stats -->
-                <div class="stats-grid" id="statsGrid">
-                    <div class="stat-card">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="totalPatients">-</div>
-                            <div class="stat-label">Total Patients</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🏥</div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="departmentCount">-</div>
-                            <div class="stat-label">Departments</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">✅</div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="authSuccess">-</div>
-                            <div class="stat-label">Auth Success</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">❌</div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="authFailures">-</div>
-                            <div class="stat-label">Auth Failures</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabs -->
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="patients">Patients</button>
-                    <button class="tab-btn" data-tab="metrics">Performance Metrics</button>
-                    <button class="tab-btn" data-tab="security">Security Events</button>
-                    <button class="tab-btn" data-tab="config">Configuration</button>
-                </div>
-
-                <!-- Patients Tab -->
-                <div id="patientsTab" class="tab-content active">
-                    <div class="content-header">
-                        <h2>Patient Records</h2>
-                        <button class="btn btn-primary" id="addPatientBtn">+ Add Patient</button>
-                    </div>
-
-                    <div class="department-filter" id="departmentFilter" style="display: none;">
-                        <label>Filter by Department:</label>
-                        <select id="departmentSelect">
-                            <option value="">All Departments</option>
-                        </select>
-                    </div>
-
-                    <div id="patientsContainer" class="patients-grid">
-                        <div class="loading">Loading patients...</div>
-                    </div>
-                </div>
-
-                <!-- Metrics Tab -->
-                <div id="metricsTab" class="tab-content">
-                    <div class="content-header">
-                        <h2>Performance Metrics</h2>
-                        <button class="btn btn-secondary" id="refreshMetricsBtn">↻ Refresh</button>
-                    </div>
-                    <div id="metricsContainer">
-                        <div class="metrics-section">
-                            <h3>Security Metrics</h3>
-                            <div class="metrics-grid">
-                                <div class="loading">Loading security metrics...</div>
-                            </div>
-                        </div>
-                        <div class="metrics-section">
-                            <h3>System Performance</h3>
-                            <div class="performance-grid">
-                                <div class="loading">Loading performance metrics...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Security Events Tab -->
-                <div id="securityTab" class="tab-content">
-                    <div class="content-header">
-                        <h2>Security Events</h2>
-                        <button class="btn btn-secondary" id="refreshEventsBtn">↻ Refresh</button>
-                    </div>
-                    <div id="eventsContainer" class="events-list">
-                        <div class="loading">Loading security events...</div>
-                    </div>
-                </div>
-
-                <!-- Configuration Tab -->
-                <div id="configTab" class="tab-content">
-                    <div class="content-header">
-                        <h2>Security Configuration</h2>
-                    </div>
-                    <div id="configContainer" class="config-container">
-                        <div class="loading">Loading configuration...</div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Modal for Adding Patient -->
-        <div id="addPatientModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Add New Patient</h3>
-                    <button class="modal-close" id="closeModalBtn">&times;</button>
-                </div>
-                <form id="addPatientForm" class="patient-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="firstName">First Name *</label>
-                            <input type="text" id="firstName" name="firstName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="lastName">Last Name *</label>
-                            <input type="text" id="lastName" name="lastName" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="dateOfBirth">Date of Birth *</label>
-                            <input type="date" id="dateOfBirth" name="dateOfBirth" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="phone">Phone (XXX-XXXX)</label>
-                            <input type="text" id="phone" name="phone" pattern="\d{3}-\d{4}" placeholder="555-1234" title="Format: XXX-XXXX">
-                        </div>
-                        <div class="form-group">
-                            <label for="ssn">SSN (XXX-XX-XXXX)</label>
-                            <input type="text" id="ssn" name="ssn" pattern="\d{3}-\d{2}-\d{4}" placeholder="123-45-6789" title="Format: XXX-XX-XXXX">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="address">Address</label>
-                            <input type="text" id="address" name="address" maxlength="200">
-                        </div>
-                        <div class="form-group">
-                            <label for="bloodType">Blood Type</label>
-                            <select id="bloodType" name="bloodType">
-                                <option value="">Select Blood Type</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="department">Department *</label>
-                            <select id="department" name="department" required>
-                                <option value="">Select Department</option>
-                                <option value="Cardiology">Cardiology</option>
-                                <option value="Emergency">Emergency</option>
-                                <option value="Pediatrics">Pediatrics</option>
-                                <option value="Orthopedics">Orthopedics</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="assignedDoctor">Assigned Doctor</label>
-                            <input type="text" id="assignedDoctor" name="assignedDoctor" maxlength="100">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="allergies">Allergies</label>
-                            <input type="text" id="allergies" name="allergies" maxlength="500" placeholder="None known">
-                        </div>
-                        <div class="form-group">
-                            <label for="medicalConditions">Medical Conditions</label>
-                            <input type="text" id="medicalConditions" name="medicalConditions" maxlength="1000" placeholder="None">
-                        </div>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Patient</button>
-                    </div>
-                    <div id="addPatientError" class="error-message" style="display: none;"></div>
-                </form>
+            <div class="user-section" id="userSection" style="display: none;">
+                <span class="user-info" id="userInfo"></span>
+                <button class="btn btn-secondary btn-small" id="logoutBtn">Logout</button>
             </div>
         </div>
+    </header>
 
-        <!-- Toast Notifications -->
-        <div id="toastContainer" class="toast-container"></div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Login Section -->
+        <section class="login-section" id="loginSection">
+            <div class="login-container">
+                <div class="login-card">
+                    <h2>Welcome Back</h2>
+                    <p class="login-subtitle">Sign in to access the healthcare platform</p>
+
+                    <form class="login-form" id="loginForm">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input autocomplete="username" id="username" name="username" placeholder="Enter your username"
+                                   required type="text">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input autocomplete="current-password" id="password" name="password" placeholder="Enter your password"
+                                   required type="password">
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn-primary btn-full" type="submit">Sign In</button>
+                        </div>
+
+                        <div class="error-message" id="loginError" style="display: none;"></div>
+                    </form>
+
+                    <div class="test-users">
+                        <p class="test-users-title">Test Users:</p>
+                        <div class="test-user-grid">
+                            <button class="test-user-btn" data-password="doctor123" data-username="dr.smith">
+                                <span class="role-badge doctor">Doctor</span>
+                                <span>dr.smith</span>
+                            </button>
+                            <button class="test-user-btn" data-password="nurse123" data-username="nurse.jones">
+                                <span class="role-badge nurse">Nurse</span>
+                                <span>nurse.jones</span>
+                            </button>
+                            <button class="test-user-btn" data-password="admin123" data-username="admin">
+                                <span class="role-badge admin">Admin</span>
+                                <span>admin</span>
+                            </button>
+                            <button class="test-user-btn" data-password="patient123" data-username="patient.doe">
+                                <span class="role-badge patient">Patient</span>
+                                <span>patient.doe</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section class="dashboard-section" id="dashboardSection" style="display: none;">
+            <!-- Quick Stats -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalPatients">-</div>
+                        <div class="stat-label">Total Patients</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏥</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="departmentCount">-</div>
+                        <div class="stat-label">Departments</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="authSuccess">-</div>
+                        <div class="stat-label">Auth Success</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">❌</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="authFailures">-</div>
+                        <div class="stat-label">Auth Failures</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="patients">Patients</button>
+                <button class="tab-btn" data-tab="metrics">Performance Metrics</button>
+                <button class="tab-btn" data-tab="security">Security Events</button>
+                <button class="tab-btn" data-tab="config">Configuration</button>
+            </div>
+
+            <!-- Patients Tab -->
+            <div class="tab-content active" id="patientsTab">
+                <div class="content-header">
+                    <h2>Patient Records</h2>
+                    <button class="btn btn-primary" id="addPatientBtn">+ Add Patient</button>
+                </div>
+
+                <div class="department-filter" id="departmentFilter" style="display: none;">
+                    <label>Filter by Department:</label>
+                    <select id="departmentSelect">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+
+                <div class="patients-grid" id="patientsContainer">
+                    <div class="loading">Loading patients...</div>
+                </div>
+            </div>
+
+            <!-- Metrics Tab -->
+            <div class="tab-content" id="metricsTab">
+                <div class="content-header">
+                    <h2>Performance Metrics</h2>
+                    <button class="btn btn-secondary" id="refreshMetricsBtn">↻ Refresh</button>
+                </div>
+                <div id="metricsContainer">
+                    <div class="metrics-section">
+                        <h3>Security Metrics</h3>
+                        <div class="metrics-grid">
+                            <div class="loading">Loading security metrics...</div>
+                        </div>
+                    </div>
+                    <div class="metrics-section">
+                        <h3>System Performance</h3>
+                        <div class="performance-grid">
+                            <div class="loading">Loading performance metrics...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Events Tab -->
+            <div class="tab-content" id="securityTab">
+                <div class="content-header">
+                    <h2>Security Events</h2>
+                    <button class="btn btn-secondary" id="refreshEventsBtn">↻ Refresh</button>
+                </div>
+                <div class="events-list" id="eventsContainer">
+                    <div class="loading">Loading security events...</div>
+                </div>
+            </div>
+
+            <!-- Configuration Tab -->
+            <div class="tab-content" id="configTab">
+                <div class="content-header">
+                    <h2>Security Configuration</h2>
+                </div>
+                <div class="config-container" id="configContainer">
+                    <div class="loading">Loading configuration...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Adding Patient -->
+    <div class="modal" id="addPatientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Patient</h3>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <form class="patient-form" id="addPatientForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name *</label>
+                        <input id="firstName" name="firstName" required type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name *</label>
+                        <input id="lastName" name="lastName" required type="text">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateOfBirth">Date of Birth *</label>
+                        <input id="dateOfBirth" name="dateOfBirth" required type="date">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input id="email" name="email" type="email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone (XXX-XXXX)</label>
+                        <input id="phone" name="phone" pattern="\d{3}-\d{4}" placeholder="555-1234" title="Format: XXX-XXXX"
+                               type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="ssn">SSN (XXX-XX-XXXX)</label>
+                        <input id="ssn" name="ssn" pattern="\d{3}-\d{2}-\d{4}" placeholder="123-45-6789" title="Format: XXX-XX-XXXX"
+                               type="text">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <input id="address" maxlength="200" name="address" type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="bloodType">Blood Type</label>
+                        <select id="bloodType" name="bloodType">
+                            <option value="">Select Blood Type</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="department">Department *</label>
+                        <select id="department" name="department" required>
+                            <option value="">Select Department</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Emergency">Emergency</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Orthopedics">Orthopedics</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignedDoctor">Assigned Doctor</label>
+                        <input id="assignedDoctor" maxlength="100" name="assignedDoctor" type="text">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="allergies">Allergies</label>
+                        <input id="allergies" maxlength="500" name="allergies" placeholder="None known" type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="medicalConditions">Medical Conditions</label>
+                        <input id="medicalConditions" maxlength="1000" name="medicalConditions" placeholder="None"
+                               type="text">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="cancelAddBtn" type="button">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Add Patient</button>
+                </div>
+                <div class="error-message" id="addPatientError" style="display: none;"></div>
+            </form>
+        </div>
     </div>
 
-    <script src="js/app.js"></script>
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+</div>
+
+<script src="js/app.js"></script>
 </body>
 </html>

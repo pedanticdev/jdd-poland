@@ -118,8 +118,8 @@
         try {
             const response = await fetch(`${API_BASE_URL}/security/token`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
             });
 
             if (!response.ok) {
@@ -230,19 +230,19 @@
             // Non-admin users will get a 403, which is expected.
             const roles = user.groups || user.roles || [];
             if (roles.includes('ADMIN')) {
-                 patientsContainer.innerHTML = `<div class="error-message">${error.message}</div>`;
+                patientsContainer.innerHTML = `<div class="error-message">${error.message}</div>`;
             } else {
-                 patientsContainer.innerHTML = `<div class="info-message">Listing all patients is restricted to administrators. Try the department filter.</div>`;
-                 setupDepartmentFilter();
+                patientsContainer.innerHTML = `<div class="info-message">Listing all patients is restricted to administrators. Try the department filter.</div>`;
+                setupDepartmentFilter();
             }
         }
     }
-    
+
     async function setupDepartmentFilter() {
         const departmentFilter = document.getElementById('departmentFilter');
         const departmentSelect = document.getElementById('departmentSelect');
         departmentFilter.style.display = 'block';
-        
+
         // For demo, we assume the user has one department claim
         const userDepartment = user.department;
         if (userDepartment) {

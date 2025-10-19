@@ -25,19 +25,19 @@ public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViol
             String message = violation.getMessage();
 
             violations.add(Json.createObjectBuilder()
-                .add("field", field)
-                .add("message", message)
-                .build());
+                    .add("field", field)
+                    .add("message", message)
+                    .build());
         }
 
         JsonObject error = Json.createObjectBuilder()
-            .add("error", "Validation failed")
-            .add("violations", violations)
-            .build();
+                .add("error", "Validation failed")
+                .add("violations", violations)
+                .build();
 
         return Response.status(Response.Status.BAD_REQUEST)
-            .entity(error)
-            .build();
+                .entity(error)
+                .build();
     }
 
     private String getFieldName(String propertyPath) {
